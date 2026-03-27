@@ -467,6 +467,7 @@ header{background:linear-gradient(135deg,#7B1515,#C0392B 55%,#922B21);color:#fff
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 /* ═══════════════════════════════════════════════════════
@@ -717,6 +718,13 @@ function wxSlotStr(date,slot){
 }
 
 /* ═══════════════════════════════════════════════════════
+   SUPABASE
+═══════════════════════════════════════════════════════ */
+const SUPA_URL='https://gfuzdrofrgmnpqvglouo.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmdXpkcm9mcmdtbnBxdmdsb3VvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NzIwNjEsImV4cCI6MjA5MDE0ODA2MX0.Oeld022L1l4ehqw6IHuE8zomKOSkuXmlacuBJsKRMbs';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+/* ═══════════════════════════════════════════════════════
    STATE
 ═══════════════════════════════════════════════════════ */
 let curDay='2026-04-04';
@@ -724,23 +732,76 @@ let curFilt='all';
 let curSrch='';
 let pendingAdd=null;
 
-let customActs=(()=>{try{return JSON.parse(localStorage.getItem('saCustom26')||'[]')}catch(e){return[]}})();
-let nextCustId=Math.max(999,...customActs.map(a=>a.id))+1;
+// All state starts empty — populated from Supabase on load
+let sched=(()=>{const s={};DAYS.forEach(d=>{s[d.d]={m:[],a:[],n:[]};});return s;})();
+let customActs=[];
+let nextCustId=1000;
+let stars=new Set();
+let actNotes={};
+let dayNotes={};
 
-let stars=new Set((()=>{try{return JSON.parse(localStorage.getItem('saStars26')||'[]')}catch(e){return[]}})());
-
-function loadSched(){
-  try{const r=localStorage.getItem('saTK26v4');if(r){const p=JSON.parse(r);DAYS.forEach(d=>{if(!p[d.d])p[d.d]={m:[],a:[],n:[]};});return p;}}catch(e){}
-  const s={};DAYS.forEach(d=>{s[d.d]={m:[],a:[],n:[]};});return s;
+// Debounced Supabase save — all changes funnel through here
+let _saveTimer=null;
+let _lastSaveTime=0;
+let _lastKnownUpdate=0;
+function triggerSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(doSave,800);}
+async function doSave(){
+  _lastSaveTime=Date.now();
+  try{
+    const{error}=await sb.from('trip_state').update({
+      schedule:sched,custom_acts:customActs,stars:[...stars],
+      act_notes:actNotes,day_notes:dayNotes,updated_at:new Date().toISOString()
+    }).eq('id',1);
+    if(error)console.warn('Supabase save error:',error);
+    else _lastKnownUpdate=_lastSaveTime;
+  }catch(e){console.warn('Supabase save failed:',e);}
 }
-function saveSched(){try{localStorage.setItem('saTK26v4',JSON.stringify(sched))}catch(e){}}
-function saveCustom(){try{localStorage.setItem('saCustom26',JSON.stringify(customActs))}catch(e){}}
-function saveStars(){try{localStorage.setItem('saStars26',JSON.stringify([...stars]))}catch(e){}}
-let actNotes=(()=>{try{return JSON.parse(localStorage.getItem('saActNotes26')||'{}')}catch(e){return{}}})();
-function saveActNotes(){try{localStorage.setItem('saActNotes26',JSON.stringify(actNotes))}catch(e){}}
-let dayNotes=(()=>{try{return JSON.parse(localStorage.getItem('saDayNotes26')||'{}')}catch(e){return{}}})();
-function saveDayNotes(){try{localStorage.setItem('saDayNotes26',JSON.stringify(dayNotes))}catch(e){}}
-let sched=loadSched();
+function saveSched(){triggerSave();}
+function saveCustom(){triggerSave();}
+function saveStars(){triggerSave();}
+function saveActNotes(){triggerSave();}
+function saveDayNotes(){triggerSave();}
+
+// Apply remote state from Supabase row
+function applyRemoteState(d){
+  if(d.schedule&&Object.keys(d.schedule).length){
+    sched=d.schedule;DAYS.forEach(day=>{if(!sched[day.d])sched[day.d]={m:[],a:[],n:[]};});
+  }
+  if(d.custom_acts){customActs=d.custom_acts;nextCustId=customActs.length?Math.max(999,...customActs.map(a=>a.id))+1:1000;}
+  if(d.stars)stars=new Set(d.stars);
+  actNotes=d.act_notes||{};
+  dayNotes=d.day_notes||{};
+  renderTabs();renderSched();renderList();renderPeople();
+  showToast('🔄 Synced');
+}
+
+// Real-time subscription (instant push when it works)
+function subscribeToChanges(){
+  sb.channel('trip_realtime')
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'trip_state'},payload=>{
+      if(Date.now()-_lastSaveTime<6000)return; // ignore our own save echo
+      if(payload.new&&payload.new.updated_at){
+        _lastKnownUpdate=new Date(payload.new.updated_at).getTime();
+        applyRemoteState(payload.new);
+      }
+    })
+    .subscribe();
+}
+
+// Polling fallback — checks every 15s in case real-time misses anything
+async function pollForChanges(){
+  if(Date.now()-_lastSaveTime<8000)return; // skip right after our own save
+  try{
+    const{data}=await sb.from('trip_state').select('updated_at').eq('id',1).single();
+    if(!data)return;
+    const remoteTime=new Date(data.updated_at).getTime();
+    if(remoteTime>_lastKnownUpdate+1000){
+      const{data:full}=await sb.from('trip_state').select('*').eq('id',1).single();
+      if(full){_lastKnownUpdate=remoteTime;applyRemoteState(full);}
+    }
+  }catch(e){}
+}
+setInterval(pollForChanges,15000);
 
 function seedFlights(){
   let changed=false;
@@ -1509,11 +1570,30 @@ function onDayNoteInput(date,val){
 /* ═══════════════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════════════ */
-seedFlights();
-renderTabs();
-renderSched();
-renderList();
-fetchWeather();
+async function init(){
+  // Render immediately with empty state so the UI appears fast
+  seedFlights();renderTabs();renderSched();renderList();fetchWeather();
+
+  // Load shared state from Supabase
+  try{
+    const{data,error}=await sb.from('trip_state').select('*').eq('id',1).single();
+    if(!error&&data){
+      if(data.schedule&&Object.keys(data.schedule).length){
+        sched=data.schedule;
+        DAYS.forEach(d=>{if(!sched[d.d])sched[d.d]={m:[],a:[],n:[]};});
+      }
+      if(data.custom_acts?.length){customActs=data.custom_acts;nextCustId=Math.max(999,...customActs.map(a=>a.id))+1;}
+      if(data.stars?.length)stars=new Set(data.stars);
+      if(data.act_notes)actNotes=data.act_notes;
+      if(data.day_notes)dayNotes=data.day_notes;
+      if(data.updated_at)_lastKnownUpdate=new Date(data.updated_at).getTime();
+      seedFlights();renderTabs();renderSched();renderList();
+    }
+  }catch(e){console.warn('Supabase load failed — working offline:',e);}
+
+  subscribeToChanges();
+}
+init();
 </script>
 </body>
 </html>
