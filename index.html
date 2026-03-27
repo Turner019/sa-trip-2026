@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌵 San Antonio Spring Break 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --pri:#8B1A1A;--pri-l:#C0392B;--acc:#DAA520;
+  --bg:#FEF6E8;--card:#fff;--text:#2C2C2C;--muted:#7A7060;--border:#E8DCC8;
+  --cat-do:#C0392B;--cat-see:#2471A3;--cat-eat:#1E8449;--cat-resort:#7D3C98;
+  --r:12px;--sh:0 2px 14px rgba(0,0,0,.09);
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#7B1515,#C0392B 55%,#922B21);color:#fff;padding:11px 18px;position:sticky;top:0;z-index:300;box-shadow:0 3px 18px rgba(0,0,0,.35)}
+.hdr{max-width:1440px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.hdr-t{font-size:1.25rem;font-weight:800;letter-spacing:-.4px}
+.hdr-s{font-size:.74rem;opacity:.82;margin-top:1px}
+.hdr-b{display:flex;gap:6px;flex-wrap:wrap}
+.hb{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.27);border-radius:18px;padding:3px 10px;font-size:.68rem;backdrop-filter:blur(4px);white-space:nowrap}
+
+/* VIEW TABS */
+.view-tabs{background:#fff;border-bottom:2px solid var(--border);position:sticky;top:52px;z-index:299;display:flex;padding:0 18px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.vt{padding:10px 16px;cursor:pointer;border-bottom:3px solid transparent;font-size:.85rem;font-weight:600;color:var(--muted);transition:all .17s;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.vt:hover{color:var(--pri);background:#FEF6E8}
+.vt.active{color:var(--pri);border-bottom-color:var(--pri-l)}
+
+/* DAY NAV */
+.day-nav{background:#fff;border-bottom:2px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;position:sticky;top:101px;z-index:298}
+.day-nav::-webkit-scrollbar{display:none}
+.dn-inner{display:flex;padding:0 12px;min-width:max-content}
+.day-tab{padding:7px 12px;cursor:pointer;border-bottom:3px solid transparent;transition:all .17s;display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--muted);min-width:72px}
+.day-tab:hover{background:#FEF6E8;color:var(--pri)}
+.day-tab.active{border-bottom-color:var(--pri-l);color:var(--pri);font-weight:600}
+.t-dow{font-size:.84rem;font-weight:600}.t-date{font-size:.66rem}.t-hotel{font-size:.59rem;color:var(--acc);font-weight:600;margin-top:1px}
+.t-wx{font-size:.7rem;color:#555;margin-top:1px;display:flex;align-items:center;gap:2px}
+.t-cnt{background:var(--pri-l);color:#fff;border-radius:10px;padding:1px 5px;font-size:.59rem;font-weight:700;margin-top:1px}
+
+/* VIEWS */
+.view-content{display:none}.view-content.show{display:block}
+
+/* MAIN LAYOUT */
+.wrap{max-width:1440px;margin:0 auto;padding:13px;display:grid;grid-template-columns:375px 1fr;gap:13px;align-items:start}
+
+/* MASTER PANEL */
+.mp{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden;position:sticky;top:160px;max-height:calc(100vh - 175px);display:flex;flex-direction:column}
+.mp-head{padding:11px 12px 8px;border-bottom:1px solid var(--border);background:#FDFAF5;display:flex;flex-direction:column;gap:7px}
+.mp-title{font-size:.9rem;font-weight:800;color:var(--pri);display:flex;align-items:center;justify-content:space-between}
+.add-custom-btn{background:var(--pri-l);color:#fff;border:none;border-radius:7px;padding:4px 9px;font-size:.7rem;font-weight:700;cursor:pointer;transition:all .17s}
+.add-custom-btn:hover{background:var(--pri);transform:translateY(-1px)}
+.search-inp{width:100%;padding:6px 10px;border:1.5px solid #E0D4C0;border-radius:7px;font-size:.8rem;outline:none;transition:border-color .2s;background:#fff}
+.search-inp:focus{border-color:var(--pri-l)}
+.filters{display:flex;gap:4px;flex-wrap:wrap}
+.fb{padding:3px 7px;border-radius:14px;border:1.5px solid #E0D4C0;font-size:.66rem;cursor:pointer;font-weight:600;transition:all .17s;background:#F5EDE0;color:var(--muted)}
+.fb:hover{transform:translateY(-1px)}
+.fb.on[data-f=all]{background:#2C2C2C;color:#fff;border-color:#2C2C2C}
+.fb.on[data-f=do]{background:var(--cat-do);color:#fff;border-color:var(--cat-do)}
+.fb.on[data-f=see]{background:var(--cat-see);color:#fff;border-color:var(--cat-see)}
+.fb.on[data-f=eat]{background:var(--cat-eat);color:#fff;border-color:var(--cat-eat)}
+.fb.on[data-f=resort]{background:var(--cat-resort);color:#fff;border-color:var(--cat-resort)}
+.fb.on[data-f=starred]{background:#E67E22;color:#fff;border-color:#E67E22}
+.act-scroll{overflow-y:auto;flex:1;padding:7px}
+.act-scroll::-webkit-scrollbar{width:3px}
+.act-scroll::-webkit-scrollbar-thumb{background:#DDD;border-radius:3px}
+
+/* ACTIVITY CARD */
+.ac{border:1.5px solid #EDE5D5;border-radius:9px;padding:8px 10px;margin-bottom:6px;transition:all .17s;background:#fff}
+.ac:hover{border-color:#CCC;box-shadow:0 3px 10px rgba(0,0,0,.08);transform:translateY(-1px)}
+.ac-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:3px}
+.ac-left{display:flex;align-items:flex-start;gap:5px;flex:1;min-width:0}
+.cp{padding:2px 5px;border-radius:8px;font-size:.58rem;font-weight:700;white-space:nowrap;flex-shrink:0;margin-top:2px;text-transform:uppercase;letter-spacing:.3px}
+.cp-do{background:#FDEAEA;color:var(--cat-do)}.cp-see{background:#EAF2FB;color:var(--cat-see)}
+.cp-eat{background:#E9F7EF;color:var(--cat-eat)}.cp-resort{background:#F5EEF8;color:var(--cat-resort)}
+.ac-name{font-size:.83rem;font-weight:700;color:var(--text);line-height:1.3}
+.ac-right{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.star-btn{background:none;border:none;font-size:1rem;cursor:pointer;line-height:1;padding:1px;transition:transform .15s;filter:grayscale(1) opacity(.35)}
+.star-btn.on{filter:none;transform:scale(1.1)}
+.star-btn:hover{transform:scale(1.2);filter:none}
+.map-link{font-size:.7rem;cursor:pointer;color:#2471A3;text-decoration:none;padding:1px 4px;border-radius:3px;transition:background .15s;white-space:nowrap}
+.map-link:hover{background:#EAF2FB}
+.ac-desc{font-size:.71rem;color:var(--muted);margin-bottom:4px;line-height:1.4}
+.used-on{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:5px}
+.uo{background:#FEF3E2;color:#C0550A;border:1px solid #F5CBA7;border-radius:7px;padding:1px 5px;font-size:.6rem;font-weight:600}
+.uo.pm{background:#E8F8F5;color:#0E8070;border-color:#A2D9CE}
+.uo.nite{background:#EBF5FB;color:#1A6B9A;border-color:#A9CCE3}
+.add-row{display:flex;gap:3px}
+.ab{flex:1;padding:3px 4px;border:1.5px solid transparent;border-radius:6px;font-size:.64rem;cursor:pointer;font-weight:700;transition:all .14s;display:flex;align-items:center;justify-content:center;gap:2px}
+.ab:hover{filter:brightness(1.07);transform:translateY(-1px)}.ab:active{transform:scale(.96)}
+.bm{background:#FEF3E2;color:#C0550A;border-color:#F5CBA7}.ba{background:#E8F8F5;color:#0E8070;border-color:#A2D9CE}.bn{background:#EBF5FB;color:#1A6B9A;border-color:#A9CCE3}
+.bm.on{background:#FDEBD0;color:#A04000;border-color:#E59866}.ba.on{background:#D5F5E3;color:#1A6B3C;border-color:#7DCEA0}.bn.on{background:#D6EAF8;color:#1A5276;border-color:#7FB3D3}
+.empty-msg{text-align:center;padding:22px 10px;color:#BDB0A0;font-style:italic;font-size:.8rem}
+
+/* SCHEDULE */
+.sp{display:flex;flex-direction:column;gap:12px}
+.day-card{background:#fff;border-radius:var(--r);padding:13px 16px;box-shadow:var(--sh)}
+.day-card-top{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.day-card h2{font-size:1.2rem;font-weight:800;color:var(--pri)}
+.day-card p{font-size:.76rem;color:var(--muted);margin-top:2px}
+.who{padding:4px 12px;border-radius:16px;font-size:.74rem;font-weight:700;border:1.5px solid transparent}
+.who-t{background:#FEF0E7;color:#C0550A;border-color:#FAD7A0}
+.who-b{background:#EBF5FB;color:#1A6B9A;border-color:#AED6F1}
+.who-x{background:#F5EEF8;color:#6C3483;border-color:#D2B4DE}
+.clear-btn{background:none;border:1.5px solid #EDE5D5;color:var(--muted);padding:4px 10px;border-radius:7px;font-size:.7rem;cursor:pointer;transition:all .17s;font-weight:600}
+.clear-btn:hover{background:#FDEAEA;border-color:#F5B7B1;color:var(--cat-do)}
+
+/* WEATHER BAR */
+.wx-bar{background:linear-gradient(135deg,#E3F0FF,#EBF5FB);border:1px solid #AED6F1;border-radius:9px;padding:9px 14px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.wx-main{display:flex;align-items:center;gap:8px}
+.wx-icon{font-size:1.6rem;line-height:1}
+.wx-temps{font-size:.9rem;font-weight:800;color:#1A3A5C}
+.wx-desc{font-size:.75rem;color:#2471A3;font-weight:600}
+.wx-extras{display:flex;gap:10px;font-size:.73rem;color:#2471A3;flex-wrap:wrap;margin-left:auto}
+.wx-extra-item{display:flex;align-items:center;gap:3px;background:rgba(255,255,255,.55);padding:2px 7px;border-radius:10px}
+.wx-loading{font-size:.78rem;color:var(--muted);font-style:italic;padding:8px}
+
+/* SLOT */
+.slot-card{background:#fff;border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
+.slot-hdr{padding:10px 14px;display:flex;align-items:center;gap:7px;color:#fff;font-weight:800;font-size:.89rem}
+.slot-m .slot-hdr{background:linear-gradient(135deg,#C0550A,#E67E22)}
+.slot-a .slot-hdr{background:linear-gradient(135deg,#0E7B63,#16A085)}
+.slot-n .slot-hdr{background:linear-gradient(135deg,#1B2631,#2C3E50)}
+.slot-time{margin-left:auto;font-size:.68rem;opacity:.82;font-weight:500}
+.slot-cnt{background:rgba(255,255,255,.2);border-radius:10px;padding:1px 6px;font-size:.63rem;font-weight:700;margin-left:5px}
+.slot-wx{background:rgba(255,255,255,.18);border-radius:8px;padding:2px 8px;font-size:.68rem;font-weight:600;margin-left:4px}
+.slot-body{padding:10px;min-height:68px}
+.slot-empty{height:50px;display:flex;align-items:center;justify-content:center;border:2px dashed #EDE5D5;border-radius:7px;color:#C0B09A;font-size:.74rem;font-style:italic}
+.si-list{display:flex;flex-direction:column;gap:5px}
+.si{display:flex;align-items:center;gap:8px;padding:7px 9px;background:#FDFAF5;border:1.5px solid #EDE5D5;border-radius:7px;transition:all .17s;animation:fadeIn .2s ease}
+.si:hover{background:#FAF4EB;border-color:#D5C9B5}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.si-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.si-info{flex:1}
+.si-name{font-size:.82rem;font-weight:700}
+.si-sub{font-size:.64rem;color:var(--muted);margin-top:1px}
+.si-rm{background:none;border:none;cursor:pointer;color:#C0B09A;font-size:1.05rem;line-height:1;padding:2px 4px;border-radius:3px;transition:all .15s;flex-shrink:0}
+.si-rm:hover{background:#FDEAEA;color:var(--cat-do)}
+.travel-note{display:flex;align-items:center;gap:6px;padding:5px 9px;background:#F8F0FF;border:1px solid #D7BDE2;border-radius:6px;font-size:.7rem;color:#6C3483;animation:fadeIn .2s ease}
+.travel-note a{color:#6C3483;font-size:.66rem;text-decoration:underline;cursor:pointer}
+.tn-rm{background:none;border:none;cursor:pointer;color:#BB8FCE;font-size:.9rem;line-height:1;padding:1px 3px;border-radius:3px;margin-left:auto;transition:all .15s}
+.tn-rm:hover{background:#FDEAEA;color:var(--cat-do)}
+
+/* FLIGHT CARD */
+.flight-card{display:flex;align-items:center;gap:8px;padding:9px 11px;background:linear-gradient(135deg,#EBF5FB,#D6EAF8);border:1.5px solid #AED6F1;border-radius:7px;animation:fadeIn .2s ease}
+.fc-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0}
+.fc-badge{background:#1A6B9A;color:#fff;border-radius:5px;padding:3px 7px;font-size:.63rem;font-weight:700;white-space:nowrap;flex-shrink:0;letter-spacing:.3px}
+.fc-body{min-width:0}
+.fc-route{font-size:.84rem;font-weight:800;color:#1A3A5C}
+.fc-detail{font-size:.64rem;color:#2471A3;margin-top:1px}
+.si-edit{background:none;border:none;cursor:pointer;color:#C0B09A;font-size:.82rem;padding:2px 4px;border-radius:3px;transition:all .15s;flex-shrink:0}
+.si-edit:hover{background:#EBF5FB;color:#1A6B9A}
+/* MAP ADD CONTROL */
+.map-add-ctrl{margin-top:8px;border-top:1px solid #e8e8e8;padding-top:8px}
+.mac-row{display:flex;gap:4px;margin-bottom:5px}
+.mac-row select{padding:4px 5px;border:1px solid #ddd;border-radius:5px;font-size:.72rem;background:#fff;cursor:pointer}
+.mac-day{flex:2}.mac-slot{flex:1}
+.mac-btn{background:#C0392B;color:#fff;border:none;border-radius:5px;padding:5px 0;font-size:.74rem;font-weight:700;cursor:pointer;width:100%;transition:background .17s}
+.mac-btn:hover{background:#8B1A1A}
+.legend{background:#fff;border-radius:var(--r);box-shadow:var(--sh);padding:10px 14px}
+.leg-title{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.leg-items{display:flex;gap:10px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:.7rem;color:var(--muted)}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* DURATION BADGE */
+.dur-badge{font-size:.59rem;font-weight:700;color:#7A5C28;background:#FDF0D8;border:1px solid #E8D0A0;border-radius:5px;padding:1px 5px;white-space:nowrap;flex-shrink:0;letter-spacing:.1px}
+
+/* ACTIVITY NOTE (on list card) */
+.act-note-wrap{margin:3px 0 4px}
+.act-note{font-size:.7rem;color:#6B5040;background:#FFFCF4;border-left:2px solid #D4A842;padding:3px 7px;border-radius:0 5px 5px 0;line-height:1.4;display:flex;align-items:flex-start;gap:5px}
+.act-note-text{flex:1}
+.act-note-btn{background:none;border:none;cursor:pointer;color:#C0A060;font-size:.72rem;padding:0 2px;flex-shrink:0;line-height:1.4;transition:color .15s}
+.act-note-btn:hover{color:#8B6914}
+.act-note-add{font-size:.68rem;color:#C0A060;cursor:pointer;font-style:italic;margin:2px 0 4px;display:inline-flex;align-items:center;gap:3px;transition:color .15s}
+.act-note-add:hover{color:#8B6914}
+.act-note-editor{margin:3px 0 4px}
+.act-note-inp{width:100%;font-size:.76rem;padding:5px 8px;border:1.5px solid #D4A842;border-radius:6px;outline:none;background:#FFFCF4;resize:none;min-height:42px;font-family:inherit;line-height:1.42;transition:border-color .2s}
+.act-note-inp:focus{border-color:#B8860B}
+.act-note-actions{display:flex;gap:5px;margin-top:3px}
+.act-note-save{background:#C0A060;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:.68rem;font-weight:700;cursor:pointer;transition:background .15s}
+.act-note-save:hover{background:#8B6914}
+.act-note-cancel{background:none;border:1.5px solid #E0D0B0;color:var(--muted);border-radius:5px;padding:3px 8px;font-size:.68rem;font-weight:600;cursor:pointer;transition:all .15s}
+.act-note-cancel:hover{background:#F5EDE0}
+
+/* SCHEDULE ITEM NOTE */
+.si-note{font-size:.65rem;color:#6B5040;background:#FFFCF4;border-left:2px solid #D4A842;padding:2px 6px;border-radius:0 4px 4px 0;margin-top:3px;line-height:1.35}
+
+/* DAY NOTES */
+.day-notes{margin-top:10px;border-top:1px solid var(--border);padding-top:9px}
+.day-notes-label{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.day-notes-ta{width:100%;padding:7px 10px;border:1.5px solid #E8DCC8;border-radius:8px;font-size:.8rem;resize:none;min-height:54px;font-family:inherit;background:#FFFCF4;color:var(--text);outline:none;transition:border-color .2s;line-height:1.45}
+.day-notes-ta:focus{border-color:#D4A842}
+.day-notes-ta::placeholder{color:#C8B898;font-style:italic}
+
+/* MAP VIEW */
+#viewMap{height:calc(100vh - 107px)}
+#leafletMap{width:100%;height:100%}
+.map-legend{position:absolute;bottom:30px;left:10px;z-index:1000;background:#fff;border-radius:10px;padding:10px 14px;box-shadow:0 2px 12px rgba(0,0,0,.18);font-size:.75rem;min-width:160px}
+.map-legend-title{font-weight:800;font-size:.78rem;color:var(--pri);margin-bottom:7px}
+.ml-item{display:flex;align-items:center;gap:6px;margin-bottom:4px;color:var(--text)}
+.ml-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;border:2px solid rgba(0,0,0,.15)}
+.ml-star{width:14px;height:14px;flex-shrink:0;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:.7rem}
+
+/* PEOPLE VIEW */
+#viewPeople{padding:16px;max-width:1440px;margin:0 auto}
+.people-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.people-header h2{font-size:1.1rem;font-weight:800;color:var(--pri)}
+.people-header p{font-size:.78rem;color:var(--muted)}
+.people-legend{display:flex;gap:10px;font-size:.72rem;flex-wrap:wrap}
+.pl-item{display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:8px}
+.pl-item.gap{background:#FEF0E7;color:#C0550A}
+.pl-item.planned{background:#E9F7EF;color:#1E8449}
+.pl-item.na{background:#F5F5F5;color:#999}
+.family-section{margin-bottom:20px}
+.fam-title{font-size:.85rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:5px;border-bottom:2px solid var(--border)}
+.people-grid{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pg-table{border-collapse:collapse;min-width:100%;font-size:.75rem}
+.pg-table th{background:#FDFAF5;padding:7px 10px;border:1px solid var(--border);font-weight:700;color:var(--muted);white-space:nowrap;text-align:center;font-size:.7rem}
+.pg-table td{border:1px solid var(--border);padding:6px 8px;vertical-align:top;min-width:110px}
+.pg-person{background:#FDFAF5;font-weight:700;color:var(--text);white-space:nowrap;padding:8px 10px;font-size:.8rem}
+.pg-person .em{font-size:1rem;margin-right:4px}
+.cell-na{background:#F8F8F8;color:#CCC;font-size:.7rem;font-style:italic;text-align:center;padding:12px 4px!important}
+.cell-empty{background:#FFF8F3;border-left:3px solid #F39C12!important}
+.cell-planned{background:#F0FFF4;border-left:3px solid #27AE60!important}
+.slot-row{display:flex;flex-direction:column;gap:3px}
+.slot-entry{font-size:.66rem;padding:2px 5px;border-radius:4px;line-height:1.3}
+.slot-entry.has-act{background:#E9F7EF;color:#1E8449;font-weight:600}
+.slot-entry.no-act{background:#FEF9F4;color:#BDB0A0;font-style:italic}
+.slot-entry.has-flight{background:#D6EAF8;color:#1A3A5C;font-weight:700;border-left:2px solid #2471A3}
+.slot-entry .slot-icon{opacity:.7}
+.gap-label{font-size:.65rem;color:#C0550A;font-style:italic}
+
+/* MODALS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:flex;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(3px)}
+.overlay.hidden{display:none}
+.modal{background:#fff;border-radius:14px;padding:20px 20px 16px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3);max-height:90vh;overflow-y:auto;animation:popIn .22s ease}
+@keyframes popIn{from{opacity:0;transform:scale(.94) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal h3{font-size:1rem;font-weight:800;color:var(--pri);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.sec-divider{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:8px 0 5px;border-top:1px solid var(--border);margin-top:8px;display:flex;align-items:center;gap:6px}
+.sec-divider:first-of-type{border-top:none;margin-top:0;padding-top:0}
+.modal label{font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px;margin-top:10px}
+.modal input,.modal textarea,.modal select{width:100%;padding:7px 10px;border:1.5px solid #E0D4C0;border-radius:7px;font-size:.82rem;outline:none;transition:border-color .2s;background:#fff;font-family:inherit}
+.modal input:focus,.modal textarea:focus,.modal select:focus{border-color:var(--pri-l)}
+.modal textarea{min-height:60px;resize:vertical;line-height:1.42}
+.modal-btns{display:flex;gap:7px;margin-top:14px;justify-content:flex-end}
+.btn-cancel{background:#F5EDE0;color:var(--muted);border:none;border-radius:7px;padding:7px 14px;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .17s}
+.btn-cancel:hover{background:#EDE5D5}
+.btn-primary{background:var(--pri-l);color:#fff;border:none;border-radius:7px;padding:7px 16px;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .17s}
+.btn-primary:hover{background:var(--pri);transform:translateY(-1px)}
+.btn-maps{background:#EBF5FB;color:#1A6B9A;border:1.5px solid #AED6F1;border-radius:7px;padding:7px 12px;font-size:.77rem;font-weight:700;cursor:pointer;transition:all .17s;width:100%;margin-top:3px;text-align:center;display:block}
+.btn-maps:hover{background:#D6EAF8}
+.from-box{background:#F5EEF8;border:1.5px solid #D2B4DE;border-radius:8px;padding:8px 12px;margin:7px 0}
+.from-label{font-size:.64rem;font-weight:700;color:#6C3483;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.from-name{font-size:.86rem;font-weight:700;color:#4A235A}
+.travel-inp-row{display:flex;align-items:center;gap:7px;margin-top:8px}
+.travel-inp-row input{flex:1}
+.travel-inp-label{font-size:.8rem;font-weight:600;color:var(--muted);white-space:nowrap}
+
+/* PEOPLE CHECKBOXES */
+.people-checks{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pcheck{display:flex;align-items:center;gap:5px;padding:5px 10px;border:1.5px solid var(--border);border-radius:18px;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .15s;user-select:none;background:#F8F4ED}
+.pcheck:hover{border-color:#C0A882;background:#F5EDE0}
+.pcheck.checked{background:#E9F7EF;border-color:#7DCEA0;color:#1E8449}
+.pcheck input{display:none}
+.all-none-btns{display:flex;gap:6px;margin-bottom:6px}
+.tiny-btn{background:none;border:1.5px solid var(--border);color:var(--muted);border-radius:6px;padding:3px 8px;font-size:.68rem;font-weight:700;cursor:pointer;transition:all .15s}
+.tiny-btn:hover{background:var(--bg);border-color:#C0A882}
+
+/* SEARCH RESULTS */
+.search-results{border:1.5px solid #E0D4C0;border-radius:7px;margin-top:4px;overflow:hidden;max-height:200px;overflow-y:auto;display:none}
+.search-results.show{display:block}
+.sr-item{padding:8px 10px;cursor:pointer;border-bottom:1px solid #F5EDE0;transition:background .15s;display:flex;flex-direction:column;gap:1px}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:#FEF6E8}
+.sr-name{font-size:.8rem;font-weight:600}
+.sr-addr{font-size:.67rem;color:var(--muted)}
+.sr-loading{padding:9px 11px;font-size:.76rem;color:var(--muted);font-style:italic}
+.selected-place{background:#F0FFF4;border:1.5px solid #A9DFBF;border-radius:8px;padding:9px 11px;margin-top:7px}
+.sp-name{font-size:.88rem;font-weight:700;color:#1A6B3C;margin-bottom:1px}
+.sp-addr{font-size:.7rem;color:var(--muted)}
+.btn-manual-toggle{background:none;border:1.5px dashed #D5C9B5;color:var(--muted);border-radius:7px;padding:5px 10px;font-size:.74rem;font-weight:600;cursor:pointer;width:100%;transition:all .17s;text-align:center}
+.btn-manual-toggle:hover{background:#FEF6E8;border-color:#C0A882;color:var(--text)}
+
+/* TOAST */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(55px);background:#1B2631;color:#fff;padding:7px 16px;border-radius:20px;font-size:.79rem;font-weight:600;transition:transform .25s ease;z-index:999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 18px rgba(0,0,0,.28)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:960px){.wrap{grid-template-columns:1fr}.mp{position:static;max-height:400px}}
+@media(max-width:520px){.hdr-b{display:none}.hdr-t{font-size:1rem}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+<div class="hdr">
+  <div><div class="hdr-t">🌵 San Antonio Spring Break 2026</div><div class="hdr-s">April 4–12 &nbsp;•&nbsp; Turner &amp; Koczan Families</div></div>
+  <div class="hdr-b">
+    <span class="hb">🏨 Apr 4–6 &nbsp;The St. Anthony</span>
+    <span class="hb">🏨 Apr 6–12 &nbsp;JW Marriott Hill Country</span>
+    <span class="hb" id="sync-status" style="cursor:pointer" onclick="pollForChanges()" title="Click to sync now">☁️ Connecting…</span>
+  </div>
+</div>
+</header>
+
+<!-- VIEW TABS -->
+<div class="view-tabs">
+  <div class="vt active" onclick="showView('schedule')">📅 Schedule</div>
+  <div class="vt" onclick="showView('map')">🗺️ Activity Map</div>
+  <div class="vt" onclick="showView('people')">👥 People Overview</div>
+</div>
+
+<!-- DAY NAV (only for schedule view) -->
+<div class="day-nav" id="dayNavWrap"><div class="dn-inner" id="dayNav"></div></div>
+
+<!-- ══ SCHEDULE VIEW ══ -->
+<div id="viewSchedule" class="view-content show">
+<div class="wrap">
+  <!-- MASTER LIST -->
+  <div class="mp">
+    <div class="mp-head">
+      <div class="mp-title">
+        📋 Activity List <span id="actCnt" style="background:#F5EDE0;color:var(--muted);border-radius:9px;padding:1px 7px;font-size:.65rem;font-weight:600;margin-left:4px">50</span>
+        <button class="add-custom-btn" onclick="openCustomModal()">+ Add Custom</button>
+      </div>
+      <input class="search-inp" type="text" id="srchInp" placeholder="🔍 Search…" oninput="doFilter()">
+      <div class="filters">
+        <button class="fb on" data-f="all"     onclick="setF('all',this)">All</button>
+        <button class="fb"    data-f="do"      onclick="setF('do',this)">🎡 Do</button>
+        <button class="fb"    data-f="see"     onclick="setF('see',this)">👁 See</button>
+        <button class="fb"    data-f="eat"     onclick="setF('eat',this)">🍽 Eat</button>
+        <button class="fb"    data-f="resort"  onclick="setF('resort',this)">🏊 Resort</button>
+        <button class="fb"    data-f="starred" onclick="setF('starred',this)">⭐ Starred</button>
+      </div>
+    </div>
+    <div class="act-scroll" id="actList"></div>
+  </div>
+  <!-- SCHEDULE PANEL -->
+  <div class="sp" id="schedPanel"></div>
+</div>
+</div>
+
+<!-- ══ MAP VIEW ══ -->
+<div id="viewMap" class="view-content">
+  <div id="leafletMap"></div>
+  <div class="map-legend" id="mapLegend">
+    <div class="map-legend-title">🗺️ Map Legend</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#C0392B;border-color:#8B0000"></div>Things To Do</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#2471A3;border-color:#1A5276"></div>Things To See</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#1E8449;border-color:#145A32"></div>Restaurants</div>
+    <div class="ml-item"><div class="ml-dot" style="background:#7D3C98;border-color:#512E5F"></div>Resort Activities</div>
+    <div style="border-top:1px solid var(--border);margin:7px 0"></div>
+    <div class="ml-item"><div class="ml-star" style="background:#DAA520;font-size:.85rem">★</div>JW Marriott (Resort)</div>
+    <div class="ml-item"><div class="ml-star" style="background:#C0392B;font-size:.85rem">★</div>The St. Anthony Hotel</div>
+  </div>
+</div>
+
+<!-- ══ PEOPLE VIEW ══ -->
+<div id="viewPeople" class="view-content">
+  <div style="max-width:1440px;margin:0 auto;padding:16px">
+    <div class="people-header">
+      <div>
+        <h2>👥 People Overview</h2>
+        <p>See who's doing what — and spot any gaps in the plan</p>
+      </div>
+      <div class="people-legend">
+        <div class="pl-item planned">✅ Activities planned</div>
+        <div class="pl-item gap">⚠️ Gap (free time)</div>
+        <div class="pl-item na">— Not on trip yet</div>
+        <div class="pl-item" style="background:#D6EAF8;color:#1A3A5C">✈️ Flight day</div>
+      </div>
+    </div>
+    <div id="peopleContent"></div>
+  </div>
+</div>
+
+<!-- ══ ADD ACTIVITY MODAL (travel + who's going) ══ -->
+<div class="overlay hidden" id="addOverlay" onclick="closeAddIfBg(event)">
+<div class="modal">
+  <h3 id="addTitle">➕ Add to Schedule</h3>
+  <p style="font-size:.82rem;color:var(--muted);margin-bottom:2px">Adding: <strong id="addActName" style="color:var(--text)"></strong></p>
+
+  <div class="sec-divider">🚗 Travel Time <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+  <div class="from-box">
+    <div class="from-label">Coming from</div>
+    <div class="from-name" id="addFrom"></div>
+  </div>
+  <button class="btn-maps" onclick="openTravelMaps()">📍 Open Directions in Maps</button>
+  <div class="travel-inp-row">
+    <input type="number" id="addMin" placeholder="e.g. 25" min="1" max="180">
+    <span class="travel-inp-label">min estimated travel</span>
+  </div>
+
+  <div class="sec-divider">👥 Who's Going?</div>
+  <div class="all-none-btns">
+    <button class="tiny-btn" onclick="checkAll()">Select All</button>
+    <button class="tiny-btn" onclick="checkNone()">Clear All</button>
+  </div>
+  <div class="people-checks" id="addPeople"></div>
+
+  <div class="sec-divider">📝 Visit Note <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+  <textarea id="addNote" placeholder="e.g. Book tickets in advance, meet at main entrance, bring cash…" style="width:100%;padding:7px 10px;border:1.5px solid #E0D4C0;border-radius:7px;font-size:.82rem;outline:none;resize:none;min-height:50px;font-family:inherit;background:#FFFCF4;transition:border-color .2s" onfocus="this.style.borderColor='#D4A842'" onblur="this.style.borderColor='#E0D4C0'"></textarea>
+
+  <div class="modal-btns">
+    <button class="btn-cancel" onclick="cancelAdd()">Cancel</button>
+    <button class="btn-primary" id="addConfirmBtn" onclick="confirmAdd()">Add to Schedule</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ CUSTOM ADD MODAL ══ -->
+<div class="overlay hidden" id="customOverlay" onclick="closeCustomIfBg(event)">
+<div class="modal">
+  <h3>➕ Add Custom Activity</h3>
+
+  <!-- SEARCH MODE -->
+  <div id="custSearchMode">
+    <label>Search for a place</label>
+    <input type="text" id="custSearch" placeholder="Type a restaurant or place name…" oninput="onCustSearch()" autocomplete="off">
+    <div class="search-results" id="custResults"></div>
+    <div id="custNoResults" style="display:none;margin-top:6px">
+      <div style="background:#FEF9F4;border:1.5px solid #F5CBA7;border-radius:7px;padding:9px 12px;font-size:.78rem;color:#A04000">
+        No results found. Try a shorter name or switch to manual entry below.
+      </div>
+    </div>
+    <button class="btn-manual-toggle" onclick="enableManualEntry()" style="margin-top:8px">
+      ✏️ Can't find it? Enter manually
+    </button>
+  </div>
+
+  <!-- MANUAL ENTRY MODE -->
+  <div id="custManualMode" style="display:none">
+    <div style="background:#FEF6E8;border:1.5px solid #F5CBA7;border-radius:8px;padding:8px 12px;font-size:.75rem;color:#A04000;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+      ✏️ Manual entry — fill in the details below
+      <button onclick="disableManualEntry()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:.72rem;color:var(--muted);font-weight:700;padding:1px 4px">← Back to search</button>
+    </div>
+    <label>Place Name *</label>
+    <input type="text" id="manName" placeholder="e.g. Corrine" autocomplete="off">
+    <label>Address <span style="font-weight:400;text-transform:none;letter-spacing:0">(helps with map link)</span></label>
+    <input type="text" id="manAddr" placeholder="e.g. 300 E Travis St, San Antonio, TX" autocomplete="off">
+  </div>
+
+  <!-- SHARED FORM (shown after search pick OR in manual mode) -->
+  <div id="custForm" style="display:none">
+    <div class="selected-place" id="selPlace" style="display:none">
+      <div class="sp-name" id="selName"></div>
+      <div class="sp-addr" id="selAddr"></div>
+    </div>
+    <label>Category</label>
+    <select id="custCat">
+      <option value="eat">🍽 Restaurant</option>
+      <option value="do">🎡 Things To Do</option>
+      <option value="see">👁 Things To See</option>
+      <option value="resort">🏊 Resort Activity</option>
+    </select>
+    <label>Description <span style="font-weight:400;text-transform:none;letter-spacing:0">(edit as needed)</span></label>
+    <textarea id="custDesc" placeholder="Brief description…"></textarea>
+  </div>
+
+  <div class="modal-btns">
+    <button class="btn-cancel" onclick="closeCustomModal()">Cancel</button>
+    <button class="btn-primary" id="custAddBtn" style="display:none" onclick="addCustomAct()">Add to My List</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════
+   DATA: DAYS
+═══════════════════════════════════════════════════════ */
+const DAYS = [
+  {d:'2026-04-04',dow:'Saturday', sh:'Sat',lbl:'Apr 4', hotel:'St. Anthony',who:'turners',note:'Arrive & Explore Downtown'},
+  {d:'2026-04-05',dow:'Sunday',   sh:'Sun',lbl:'Apr 5', hotel:'St. Anthony',who:'turners',note:'Turner Family Day'},
+  {d:'2026-04-06',dow:'Monday',   sh:'Mon',lbl:'Apr 6', hotel:'Transition', who:'transit',note:'St. Anthony → JW Marriott'},
+  {d:'2026-04-07',dow:'Tuesday',  sh:'Tue',lbl:'Apr 7', hotel:'JW Marriott',who:'both',   note:'Both Families'},
+  {d:'2026-04-08',dow:'Wednesday',sh:'Wed',lbl:'Apr 8', hotel:'JW Marriott',who:'both',   note:'Both Families'},
+  {d:'2026-04-09',dow:'Thursday', sh:'Thu',lbl:'Apr 9', hotel:'JW Marriott',who:'both',   note:'Both Families'},
+  {d:'2026-04-10',dow:'Friday',   sh:'Fri',lbl:'Apr 10',hotel:'JW Marriott',who:'both',   note:'Both Families'},
+  {d:'2026-04-11',dow:'Saturday', sh:'Sat',lbl:'Apr 11',hotel:'JW Marriott',who:'both',   note:'Both Families'},
+  {d:'2026-04-12',dow:'Sunday',   sh:'Sun',lbl:'Apr 12',hotel:'JW Marriott',who:'both',   note:'Check-Out Day'},
+];
+
+/* ═══════════════════════════════════════════════════════
+   DATA: FLIGHTS
+═══════════════════════════════════════════════════════ */
+const FLIGHTS = [
+  {id:'UA515', e:'✈️', flightNum:'UA 515', airline:'United Airlines',
+   dep:{time:'11:54 AM', airport:'EWR', city:'Newark, NJ'},
+   arr:{time:'3:11 PM',  airport:'SAT', city:'San Antonio, TX'},
+   date:'2026-04-04', slot:'m', duration:'4h 17m', aircraft:'Boeing 737 MAX 9',
+   people:['kyle','kelly','brynn','marcum'], dir:'inbound'},
+  // ← ADD KOCZAN INBOUND FLIGHT HERE once details arrive, e.g.:
+  // {id:'KOCZAN_IN', e:'✈️', flightNum:'UA XXX', airline:'United Airlines',
+  //  dep:{time:'XX:XX AM', airport:'???', city:'???'},
+  //  arr:{time:'XX:XX PM', airport:'SAT', city:'San Antonio, TX'},
+  //  date:'2026-04-06', slot:'m', duration:'Xh Xm', aircraft:'Boeing 737',
+  //  people:['jeff','blair','emerson','finley'], dir:'inbound'},
+  {id:'UA254', e:'✈️', flightNum:'UA 254', airline:'United Airlines',
+   dep:{time:'12:15 PM', airport:'SAT', city:'San Antonio, TX'},
+   arr:{time:'5:07 PM',  airport:'EWR', city:'Newark, NJ'},
+   date:'2026-04-12', slot:'a', duration:'3h 52m', aircraft:'Boeing 737 MAX 8',
+   people:['kyle','kelly','brynn','marcum','jeff','blair','emerson','finley'], dir:'outbound'},
+];
+
+const HOTEL_LOC = {
+  'St. Anthony': {name:'The St. Anthony Hotel',    mapq:'The St. Anthony Hotel, 300 E Travis St, San Antonio, TX', pos:[29.4256,-98.4926]},
+  'JW Marriott': {name:'JW Marriott Hill Country', mapq:'JW Marriott San Antonio Hill Country Resort, 23808 Resort Pkwy, San Antonio, TX', pos:[29.7041,-98.4742]},
+  'Transition':  {name:'The St. Anthony Hotel',    mapq:'The St. Anthony Hotel, 300 E Travis St, San Antonio, TX', pos:[29.4256,-98.4926]},
+};
+
+/* ═══════════════════════════════════════════════════════
+   DATA: PEOPLE
+═══════════════════════════════════════════════════════ */
+const PEOPLE = [
+  {id:'kyle',    name:'Kyle',    fam:'turner', em:'👨'},
+  {id:'kelly',   name:'Kelly',   fam:'turner', em:'👩'},
+  {id:'brynn',   name:'Brynn',   fam:'turner', em:'👧', age:9},
+  {id:'marcum',  name:'Marcum',  fam:'turner', em:'👦', age:6},
+  {id:'jeff',    name:'Jeff',    fam:'koczan', em:'👨'},
+  {id:'blair',   name:'Blair',   fam:'koczan', em:'👩'},
+  {id:'emerson', name:'Emerson', fam:'koczan', em:'🧒', age:11},
+  {id:'finley',  name:'Finley',  fam:'koczan', em:'🧒', age:9},
+];
+
+function personAvailable(pid, date) {
+  const p = PEOPLE.find(x=>x.id===pid);
+  if (!p) return false;
+  if (p.fam==='koczan') return date >= '2026-04-06';
+  return true;
+}
+function availPeople(date) { return PEOPLE.filter(p=>personAvailable(p.id,date)); }
+
+/* ═══════════════════════════════════════════════════════
+   DATA: ACTIVITIES  (pos:[lat,lon] for map)
+═══════════════════════════════════════════════════════ */
+const ACTS = [
+  {id:1, cat:'do',    e:'🐬',pos:[29.4566,-98.6987],n:'SeaWorld San Antonio',           mapq:'SeaWorld San Antonio, 10500 SeaWorld Dr, San Antonio, TX',              desc:'World-class theme park: animal shows, thrill rides & water attractions. Kids 5 & under FREE in 2026!'},
+  {id:2, cat:'do',    e:'🎢',pos:[29.5984,-98.6010],n:'Six Flags Fiesta Texas',          mapq:'Six Flags Fiesta Texas, 17000 I-10, San Antonio, TX',                   desc:'Iconic roller coasters & family rides in a stunning limestone quarry setting — a Texas classic'},
+  {id:3, cat:'do',    e:'🪨',pos:[29.6923,-98.3434],n:'Natural Bridge Caverns',          mapq:'Natural Bridge Caverns, 26495 Natural Bridge Caverns Rd, San Antonio, TX',desc:'Largest known commercial caverns in Texas — 180 ft underground. Jaw-dropping for kids & adults!'},
+  {id:4, cat:'do',    e:'🦒',pos:[29.4543,-98.4755],n:'San Antonio Zoo',                 mapq:'San Antonio Zoo, 3903 N St Marys St, San Antonio, TX',                  desc:'35+ acres, 750+ animals. One of the highest-rated zoos in the US. Perfect for Brynn & Marcum!'},
+  {id:5, cat:'do',    e:'🔬',pos:[29.4380,-98.4699],n:"The DoSeum (Children's Museum)",  mapq:'The DoSeum, 2800 Broadway, San Antonio, TX',                            desc:"68,000 sq ft of interactive STEM fun — Spy Academy, robot Baxter, Children's River & more. Ages 2–12"},
+  {id:6, cat:'do',    e:'🦬',pos:[29.6930,-98.3451],n:'Natural Bridge Wildlife Ranch',   mapq:'Natural Bridge Wildlife Ranch, 26515 Natural Bridge Caverns Rd, San Antonio, TX',desc:'Drive-through safari with 40+ species. Animals come right up to your car window — total kid favorite!'},
+  {id:7, cat:'do',    e:'⛵',pos:[29.4246,-98.4906],n:'River Walk Boat Cruise',          mapq:'Go Rio San Antonio River Cruises, River Walk, San Antonio, TX',          desc:'40-minute narrated tour gliding under stone bridges along the famous Paseo del Rio'},
+  {id:8, cat:'do',    e:'🛶',pos:[29.3887,-98.4752],n:'Kayaking on the River',           mapq:'Mission Reach Kayak, San Antonio River, San Antonio, TX',               desc:'Paddle the scenic Mission Reach section of the San Antonio River — great family adventure!'},
+  {id:9, cat:'do',    e:'🌳',pos:[29.4191,-98.4874],n:'Yanaguana Garden at Hemisfair',   mapq:'Yanaguana Garden, 434 S Alamo St, San Antonio, TX',                     desc:'FREE outdoor playground, interactive splash pad & open green space in the heart of downtown'},
+  {id:10,cat:'do',    e:'🛍️',pos:[29.4274,-98.5018],n:'Market Square (El Mercado)',     mapq:'El Mercado Market Square, 514 W Commerce St, San Antonio, TX',          desc:'Largest Mexican market outside of Mexico — 100+ shops, authentic restaurants & live Mariachi music'},
+  {id:11,cat:'do',    e:'🏛️',pos:[29.4397,-98.4778],n:'Pearl District Stroll & Shop',   mapq:'The Pearl, 312 Pearl Pkwy, San Antonio, TX',                            desc:'Historic brewery turned trendy district. Boutiques, restaurants, Saturday Farmers Market & great vibes'},
+  {id:12,cat:'do',    e:'⛪',pos:[29.3627,-98.4768],n:'San Antonio Missions Walk/Bike',  mapq:'Mission San José, 6701 San José Dr, San Antonio, TX',                   desc:'Explore 4 UNESCO World Heritage missions along the river trail (rental bikes available nearby)'},
+  {id:13,cat:'do',    e:'⛳',pos:[29.5914,-98.5428],n:'Topgolf San Antonio',             mapq:'Topgolf San Antonio, 4330 N Loop 1604 W, San Antonio, TX',               desc:'High-tech bay golf & games for all skill levels. Food & drinks available — great for the whole crew!'},
+  {id:14,cat:'resort',e:'🌊',pos:[29.7041,-98.4742],n:'River Bluff Water Experience',   mapq:'JW Marriott San Antonio Hill Country Resort, 23808 Resort Pkwy, San Antonio, TX',desc:"JW Marriott's 9-acre water park: 5 slides into the lazy river, beach area & activity pools"},
+  {id:15,cat:'resort',e:'🏖️',pos:[29.7041,-98.4742],n:'Lazy River Float Session',       mapq:'JW Marriott San Antonio Hill Country Resort, 23808 Resort Pkwy, San Antonio, TX',desc:'Drift along the heated 1,100-ft lazy river at the JW Marriott — pure relaxation for all ages'},
+  {id:16,cat:'resort',e:'🏊',pos:[29.7041,-98.4742],n:'Resort Activity Pool Day',        mapq:'JW Marriott San Antonio Hill Country Resort, 23808 Resort Pkwy, San Antonio, TX',desc:'Splash time in the family-friendly activity pools at the JW Marriott. Waterfalls, slides & more!'},
+  {id:17,cat:'resort',e:'🍹',pos:[29.7041,-98.4742],n:'Adults-Only Infinity Pool',       mapq:'JW Marriott San Antonio Hill Country Resort, 23808 Resort Pkwy, San Antonio, TX',desc:'Serene retreat overlooking the Hill Country — for Kyle & Kelly (or all the adults!) 😎'},
+  {id:18,cat:'resort',e:'💆',pos:[29.7041,-98.4742],n:'Lantana Spa Day',                 mapq:'Lantana Spa, JW Marriott Hill Country, 23808 Resort Pkwy, San Antonio, TX',desc:'Luxury massages, facials & body treatments at the award-winning resort spa. Pure bliss! (adults)'},
+  {id:19,cat:'resort',e:'🏌️',pos:[29.7041,-98.4742],n:'Golf at TPC San Antonio',        mapq:'TPC San Antonio, 23808 Resort Pkwy, San Antonio, TX',                   desc:'Championship 36-hole TPC course with breathtaking Texas Hill Country views (adults)'},
+  {id:20,cat:'resort',e:'🧘',pos:[29.7041,-98.4742],n:'Morning Yoga / Fitness Class',   mapq:'JW Marriott San Antonio Hill Country Resort, 23808 Resort Pkwy, San Antonio, TX',desc:'Start the day right with resort fitness classes or outdoor yoga on the beautiful grounds'},
+  {id:21,cat:'resort',e:'🌿',pos:[29.7041,-98.4742],n:'Explore the Resort Grounds',      mapq:'JW Marriott San Antonio Hill Country Resort, 23808 Resort Pkwy, San Antonio, TX',desc:'Peaceful nature walks across the 600-acre Hill Country property — deer sightings likely!'},
+  {id:22,cat:'see',   e:'🏛️',pos:[29.4260,-98.4861],n:'The Alamo',                       mapq:'The Alamo, 300 Alamo Plaza, San Antonio, TX',                           desc:"Texas's most sacred landmark — site of the famous 1836 battle. Absolutely unmissable. Free admission!"},
+  {id:23,cat:'see',   e:'🌉',pos:[29.4246,-98.4906],n:'Stroll the River Walk',            mapq:'San Antonio River Walk, San Antonio, TX',                               desc:'Walk the beautiful 15-mile Paseo del Rio — restaurants, shops, bridges & stunning river scenery'},
+  {id:24,cat:'see',   e:'⛪',pos:[29.4244,-98.4945],n:'San Fernando Cathedral',           mapq:'San Fernando Cathedral, 115 Main Plaza, San Antonio, TX',               desc:'Oldest cathedral sanctuary in the US (1731). Gorgeous architecture right in the heart of downtown'},
+  {id:25,cat:'see',   e:'🗼',pos:[29.4178,-98.4822],n:'Tower of the Americas',            mapq:'Tower of the Americas, 739 E César E. Chávez Blvd, San Antonio, TX',    desc:'750-ft tower with a glass-floor observation deck & revolving Chart House restaurant at the top'},
+  {id:26,cat:'see',   e:'🌸',pos:[29.4565,-98.4663],n:'San Antonio Botanical Garden',     mapq:'San Antonio Botanical Garden, 555 Funston Pl, San Antonio, TX',         desc:'38 acres of stunning spring blooms — April is peak season! Family Adventure Garden for kids'},
+  {id:27,cat:'see',   e:'🎨',pos:[29.4444,-98.4772],n:'San Antonio Museum of Art',        mapq:'San Antonio Museum of Art, 200 W Jones Ave, San Antonio, TX',           desc:'One of the largest art museums in Texas, housed beautifully in the historic Lone Star Brewery'},
+  {id:28,cat:'see',   e:'🕌',pos:[29.3627,-98.4768],n:'Mission San José',                 mapq:'Mission San José, 6701 San José Dr, San Antonio, TX',                   desc:"Crown jewel of the missions — UNESCO World Heritage site with the famous baroque 'Rose Window'"},
+  {id:29,cat:'see',   e:'🏡',pos:[29.4145,-98.4875],n:'King William Historic District',   mapq:'King William Historic District, San Antonio, TX',                       desc:"San Antonio's finest Victorian neighborhood — gorgeous 19th-century mansions on shaded streets"},
+  {id:30,cat:'see',   e:'🎭',pos:[29.4217,-98.4895],n:'Arneson River Theatre',            mapq:'Arneson River Theatre, San Antonio, TX',                                desc:'Stunning outdoor riverside amphitheater built into the riverbank — check for spring performances'},
+  {id:31,cat:'see',   e:'🎪',pos:[29.4218,-98.4880],n:'La Villita Arts Village',          mapq:'La Villita, 418 Villita St, San Antonio, TX',                           desc:"San Antonio's oldest neighborhood, restored into a charming arts village with galleries & artisan shops"},
+  {id:32,cat:'eat',   e:'🥑',pos:[29.4235,-98.4866],n:"Boudro's on the River Walk",       mapq:"Boudro's, 421 E Commerce St, San Antonio, TX",                          desc:'Texas cuisine & TABLESIDE guacamole — a true River Walk institution. Book ahead! Great for families'},
+  {id:33,cat:'eat',   e:'⭐',pos:[29.4257,-98.4945],n:'Biga on the Banks',                mapq:"Biga on the Banks, 203 S St Mary's St, San Antonio, TX",                desc:'8-time James Beard nominee. New American fine dining with incredible River Walk views. Special occasion!'},
+  {id:34,cat:'eat',   e:'🌮',pos:[29.4260,-98.4940],n:'Domingo',                          mapq:'Domingo Restaurant, San Antonio, TX',                                   desc:'Modern Mexican with bold flavors & a stunning riverside patio. Excellent margaritas!'},
+  {id:35,cat:'eat',   e:'🌯',pos:[29.4268,-98.4925],n:'Acénar',                           mapq:'Acenar Restaurant, 146 E Houston St, San Antonio, TX',                  desc:'Elevated Tex-Mex on a breathtaking multi-level riverside balcony. The short rib tacos are legendary!'},
+  {id:36,cat:'eat',   e:'🌭',pos:[29.4232,-98.4864],n:"Schilo's Delicatessen",             mapq:"Schilo's Delicatessen, 424 E Commerce St, San Antonio, TX",              desc:"San Antonio's OLDEST restaurant (1917). German-Texan comfort food & famous house-made root beer!"},
+  {id:37,cat:'eat',   e:'🍛',pos:[29.4228,-98.4872],n:"Rita's on the River",               mapq:"Rita's on the River, 245 E Commerce St, San Antonio, TX",               desc:'Classic family Tex-Mex right on the River Walk since 1995. Great kids menu, casual & kid-friendly'},
+  {id:38,cat:'eat',   e:'🍷',pos:[29.4397,-98.4778],n:'Supper at Hotel Emma (Pearl)',      mapq:'Supper at Hotel Emma, 136 E Grayson St, San Antonio, TX',               desc:'Elevated farm-to-table American in a stunning historic Pearl Brewery. Perfect date-night dinner!'},
+  {id:39,cat:'eat',   e:'🍱',pos:[29.4400,-98.4776],n:'Tokyo Cowboy (Pearl District)',     mapq:'Tokyo Cowboy, 303 Pearl Pkwy, San Antonio, TX',                         desc:'Japanese street food fusion at its best. The BRISKET EGG ROLLS are absolutely legendary — must try!'},
+  {id:40,cat:'eat',   e:'🔥',pos:[29.4798,-98.4577],n:"Pinkerton's Barbecue",              mapq:"Pinkerton's Barbecue, 1203 Judson Rd, San Antonio, TX",                  desc:'Slow-smoked Texas BBQ near downtown. Top-rated brisket & ribs — a perfect Texas lunch stop'},
+  {id:41,cat:'eat',   e:'🥩',pos:[29.4258,-98.4943],n:'The County Line BBQ',               mapq:'The County Line BBQ, 111 W Crockett St, San Antonio, TX',               desc:'Texas BBQ institution since 1975. Full kids menu with smoked meats in smaller portions + homemade ice cream!'},
+  {id:42,cat:'eat',   e:'🌮',pos:[29.5064,-98.5719],n:"Henry's Puffy Tacos",               mapq:"Henry's Puffy Tacos, 6030 Bandera Rd, San Antonio, TX",                  desc:"Home of San Antonio's ORIGINAL puffy taco — a local legend. Fun, casual and delicious!"},
+  {id:43,cat:'eat',   e:'🍽',pos:[29.5759,-98.4966],n:'Alamo Cafe',                        mapq:'Alamo Cafe, 14250 San Pedro Ave, San Antonio, TX',                      desc:'Authentic Tex-Mex with a dedicated kids menu. A classic San Antonio experience loved by locals'},
+  {id:44,cat:'eat',   e:'🎠',pos:[29.5843,-98.5488],n:'Blanco BBQ',                        mapq:'Blanco BBQ, 13259 Blanco Rd, San Antonio, TX',                          desc:'Great Texas BBQ PLUS an outdoor playground for kids — parents eat in peace while kids play!'},
+  {id:45,cat:'eat',   e:'🏪',pos:[29.4399,-98.4775],n:'The Bottling Dept. Food Hall',      mapq:'The Bottling Department, 312 Pearl Pkwy, San Antonio, TX',              desc:'Pearl District food hall with multiple vendors & outdoor courtyard seating — perfect for picky eaters!'},
+  {id:46,cat:'eat',   e:'🌙',pos:[29.7043,-98.4740],n:'Cibolo Moon (On-Resort)',            mapq:'Cibolo Moon, 23808 Resort Pkwy, San Antonio, TX',                       desc:'Tex-Mex enchiladas, fajitas & tacos right at the JW Marriott. Convenient, casual & consistently tasty'},
+  {id:47,cat:'eat',   e:'🍔',pos:[29.7038,-98.4745],n:'Rivertop Grill (On-Resort)',         mapq:'Rivertop Bar and Grill, 23808 Resort Pkwy, San Antonio, TX',            desc:'Casual American fare alongside the golf course at the JW Marriott. Famous Rivertop Burger!'},
+  {id:48,cat:'eat',   e:'🍝',pos:[29.7003,-98.4793],n:'Ravello Italian (Near Resort)',      mapq:'Ravello, 23930 US-281 N, San Antonio, TX',                              desc:'Upscale Italian steakhouse just across from the JW Marriott. Great for a special evening out'},
+  {id:49,cat:'eat',   e:'🍺',pos:[29.5815,-98.4937],n:"BJ's Restaurant & Brewhouse",        mapq:"BJ's Restaurant and Brewhouse, 16211 San Pedro Ave, San Antonio, TX",   desc:'Casual American near the JW Marriott. Famous PIZOOKIE dessert — a massive cookie in a skillet!'},
+  {id:50,cat:'eat',   e:'💨',pos:[29.7032,-98.4802],n:"Smokey Mo's BBQ (Near Resort)",      mapq:"Smokey Mo's BBQ, 26010 US-281 N, San Antonio, TX",                       desc:'Authentic oak-smoked Texas BBQ near JW Marriott. All meats smoked in-house daily. Quick & delicious'},
+];
+
+const CAT = {
+  do:    {lbl:'Things To Do',  dot:'#C0392B'},
+  see:   {lbl:'Things To See', dot:'#2471A3'},
+  eat:   {lbl:'Restaurant',    dot:'#1E8449'},
+  resort:{lbl:'Resort',        dot:'#7D3C98'},
+};
+
+/* Estimated activity durations */
+const DURS = {
+  1:'Full day',    2:'Full day',      3:'2–3 hrs',    4:'3–4 hrs',    5:'2–3 hrs',
+  6:'1–2 hrs',     7:'45 min',        8:'2–3 hrs',    9:'1–2 hrs',    10:'1–2 hrs',
+  11:'1–2 hrs',    12:'2–4 hrs',      13:'2–3 hrs',   14:'Half–Full day', 15:'1–2 hrs',
+  16:'2–4 hrs',    17:'1–2 hrs',      18:'2–3 hrs',   19:'4–5 hrs',   20:'1 hr',
+  21:'1–2 hrs',    22:'1–2 hrs',      23:'1–3 hrs',   24:'30–45 min', 25:'1 hr',
+  26:'2–3 hrs',    27:'2–3 hrs',      28:'1–2 hrs',   29:'1–2 hrs',   30:'1–2 hrs',
+  31:'1–2 hrs',    32:'1–1.5 hrs',    33:'1.5–2 hrs', 34:'1–1.5 hrs', 35:'1–1.5 hrs',
+  36:'45 min–1 hr',37:'1–1.5 hrs',    38:'1.5–2 hrs', 39:'1–1.5 hrs', 40:'45 min–1 hr',
+  41:'1–1.5 hrs',  42:'45 min–1 hr',  43:'1–1.5 hrs', 44:'1–1.5 hrs', 45:'45 min–1 hr',
+  46:'1–1.5 hrs',  47:'1–1.5 hrs',    48:'1.5–2 hrs', 49:'1–1.5 hrs', 50:'45 min–1 hr',
+};
+function getDur(id){return DURS[id]||'';}
+
+/* ═══════════════════════════════════════════════════════
+   WEATHER
+═══════════════════════════════════════════════════════ */
+const WMO = {
+  0:{d:'Clear Sky',icon:'☀️'},1:{d:'Mainly Clear',icon:'🌤️'},2:{d:'Partly Cloudy',icon:'⛅'},
+  3:{d:'Overcast',icon:'🌥️'},45:{d:'Foggy',icon:'🌫️'},48:{d:'Icy Fog',icon:'🌫️'},
+  51:{d:'Light Drizzle',icon:'🌦️'},53:{d:'Drizzle',icon:'🌦️'},55:{d:'Heavy Drizzle',icon:'🌧️'},
+  61:{d:'Light Rain',icon:'🌧️'},63:{d:'Rain',icon:'🌧️'},65:{d:'Heavy Rain',icon:'🌧️'},
+  71:{d:'Light Snow',icon:'❄️'},73:{d:'Snow',icon:'❄️'},75:{d:'Heavy Snow',icon:'❄️'},
+  80:{d:'Rain Showers',icon:'🌦️'},81:{d:'Rain Showers',icon:'🌦️'},82:{d:'Heavy Showers',icon:'🌧️'},
+  95:{d:'Thunderstorm',icon:'⛈️'},96:{d:'Thunderstorm',icon:'⛈️'},99:{d:'Thunderstorm',icon:'⛈️'},
+};
+function wmo(code){
+  if(WMO[code])return WMO[code];
+  if(code<=1)return WMO[1];if(code<=2)return WMO[2];if(code<=3)return WMO[3];
+  if(code<=48)return{d:'Foggy',icon:'🌫️'};if(code<=55)return{d:'Drizzle',icon:'🌦️'};
+  if(code<=65)return{d:'Rain',icon:'🌧️'};if(code<=77)return{d:'Snow',icon:'❄️'};
+  if(code<=82)return{d:'Showers',icon:'🌦️'};return{d:'Thunderstorm',icon:'⛈️'};
+}
+
+let wxData = null;
+
+async function fetchWeather(){
+  // check cache (2hr)
+  try{
+    const raw=localStorage.getItem('saWx26');
+    if(raw){const c=JSON.parse(raw);if(Date.now()-c.ts<7200000){wxData=c.data;onWxReady();return;}}
+  }catch(e){}
+  try{
+    const url='https://api.open-meteo.com/v1/forecast?'
+      +'latitude=29.4241&longitude=-98.4936'
+      +'&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode'
+      +'&hourly=temperature_2m,precipitation_probability,weathercode'
+      +'&temperature_unit=fahrenheit&wind_speed_unit=mph&timezone=America%2FChicago'
+      +'&start_date=2026-04-04&end_date=2026-04-12';
+    const res=await fetch(url);
+    const json=await res.json();
+    wxData=processWx(json);
+    try{localStorage.setItem('saWx26',JSON.stringify({data:wxData,ts:Date.now()}))}catch(e){}
+    onWxReady();
+  }catch(e){console.warn('Weather unavailable:',e);}
+}
+
+function processWx(json){
+  const r={};
+  const{daily,hourly}=json;
+  daily.time.forEach((date,i)=>{
+    const code=daily.weathercode[i];
+    const w=wmo(code);
+    r[date]={high:Math.round(daily.temperature_2m_max[i]),low:Math.round(daily.temperature_2m_min[i]),
+      code,icon:w.icon,desc:w.d,precip:daily.precipitation_probability_max[i],slots:{}};
+
+    const slotDef={m:[6,12],a:[12,18],n:[18,24]};
+    Object.entries(slotDef).forEach(([sl,[h0,h1]])=>{
+      const idxs=[];
+      hourly.time.forEach((t,idx)=>{
+        if(!t.startsWith(date))return;
+        const h=parseInt(t.split('T')[1]);
+        if(h>=h0&&h<h1)idxs.push(idx);
+      });
+      if(!idxs.length){r[date].slots[sl]=null;return;}
+      const temps=idxs.map(x=>hourly.temperature_2m[x]).filter(v=>v!=null);
+      const precs=idxs.map(x=>hourly.precipitation_probability[x]).filter(v=>v!=null);
+      const codes=idxs.map(x=>hourly.weathercode[x]).filter(v=>v!=null);
+      const wc=codes.sort((a,b)=>b-a)[0]||0;
+      const sw=wmo(wc);
+      r[date].slots[sl]={
+        lo:Math.round(Math.min(...temps)),hi:Math.round(Math.max(...temps)),
+        precip:Math.round(Math.max(...precs)),icon:sw.icon,desc:sw.d
+      };
+    });
+  });
+  return r;
+}
+
+function onWxReady(){
+  renderTabs();
+  renderSched();
+}
+
+function wxDayHtml(date){
+  if(!wxData||!wxData[date])return '<div class="wx-loading">Loading weather…</div>';
+  const w=wxData[date];
+  const precStr=w.precip>10?`💧 ${w.precip}% rain`:'';
+  return `<div class="wx-bar">
+    <div class="wx-main">
+      <span class="wx-icon">${w.icon}</span>
+      <div><div class="wx-temps">High ${w.high}°F / Low ${w.low}°F</div><div class="wx-desc">${w.desc}</div></div>
+    </div>
+    <div class="wx-extras">
+      ${precStr?`<div class="wx-extra-item">${precStr}</div>`:''}
+      <div class="wx-extra-item">🌡️ San Antonio, TX</div>
+    </div>
+  </div>`;
+}
+
+function wxSlotStr(date,slot){
+  if(!wxData||!wxData[date])return '';
+  const s=wxData[date].slots[slot];
+  if(!s)return '';
+  const p=s.precip>10?` · 💧${s.precip}%`:'';
+  return `${s.icon} ${s.lo}–${s.hi}°F${p}`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SUPABASE
+═══════════════════════════════════════════════════════ */
+const SUPA_URL='https://gfuzdrofrgmnpqvglouo.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmdXpkcm9mcmdtbnBxdmdsb3VvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1NzIwNjEsImV4cCI6MjA5MDE0ODA2MX0.Oeld022L1l4ehqw6IHuE8zomKOSkuXmlacuBJsKRMbs';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let curDay='2026-04-04';
+let curFilt='all';
+let curSrch='';
+let pendingAdd=null;
+
+// All state starts empty — populated from Supabase on load
+let sched=(()=>{const s={};DAYS.forEach(d=>{s[d.d]={m:[],a:[],n:[]};});return s;})();
+let customActs=[];
+let nextCustId=1000;
+let stars=new Set();
+let actNotes={};
+let dayNotes={};
+
+// Debounced Supabase save — all changes funnel through here
+let _saveTimer=null;
+let _lastSaveTime=0;
+let _lastKnownUpdate=0;
+function triggerSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(doSave,800);}
+async function doSave(){
+  _lastSaveTime=Date.now();
+  setSyncStatus('saving');
+  try{
+    const{error}=await sb.from('trip_state').upsert({
+      id:1,
+      schedule:sched,custom_acts:customActs,stars:[...stars],
+      act_notes:actNotes,day_notes:dayNotes,updated_at:new Date().toISOString()
+    });
+    if(error){console.error('Supabase save error:',error);setSyncStatus('error');}
+    else{_lastKnownUpdate=_lastSaveTime;setSyncStatus('saved');}
+  }catch(e){console.error('Supabase save failed:',e);setSyncStatus('error');}
+}
+function saveSched(){triggerSave();}
+function saveCustom(){triggerSave();}
+function saveStars(){triggerSave();}
+function saveActNotes(){triggerSave();}
+function saveDayNotes(){triggerSave();}
+
+// Apply remote state from Supabase row
+function applyRemoteState(d){
+  if(d.schedule&&Object.keys(d.schedule).length){
+    sched=d.schedule;DAYS.forEach(day=>{if(!sched[day.d])sched[day.d]={m:[],a:[],n:[]};});
+  }
+  if(d.custom_acts){customActs=d.custom_acts;nextCustId=customActs.length?Math.max(999,...customActs.map(a=>a.id))+1:1000;}
+  if(d.stars)stars=new Set(d.stars);
+  actNotes=d.act_notes||{};
+  dayNotes=d.day_notes||{};
+  renderTabs();renderSched();renderList();renderPeople();
+  setSyncStatus('synced');
+  showToast('🔄 Synced from another device');
+}
+
+// Sync status indicator
+function setSyncStatus(state){
+  const el=document.getElementById('sync-status');
+  if(!el)return;
+  if(state==='saving'){el.textContent='⏳ Saving…';el.style.color='#DAA520';}
+  else if(state==='saved'){el.textContent='✅ Saved';el.style.color='#1E8449';setTimeout(()=>{if(el.textContent==='✅ Saved')el.textContent='☁️ Synced';},2000);}
+  else if(state==='synced'){el.textContent='☁️ Synced';el.style.color='#2471A3';}
+  else if(state==='error'){el.textContent='⚠️ Sync error';el.style.color='#C0392B';}
+}
+
+// Real-time subscription (instant push when it works)
+function subscribeToChanges(){
+  sb.channel('trip_realtime')
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'trip_state'},payload=>{
+      if(Date.now()-_lastSaveTime<2000)return; // ignore our own save echo
+      if(payload.new&&payload.new.updated_at){
+        const rt=new Date(payload.new.updated_at).getTime();
+        if(rt<=_lastKnownUpdate)return;
+        _lastKnownUpdate=rt;
+        applyRemoteState(payload.new);
+      }
+    })
+    .subscribe(status=>{
+      const el=document.getElementById('sync-status');
+      if(el&&status==='SUBSCRIBED')el.title='Real-time connected';
+    });
+}
+
+// Polling fallback — checks every 5s in case real-time misses anything
+async function pollForChanges(){
+  if(Date.now()-_lastSaveTime<2000)return; // skip right after our own save
+  try{
+    const{data}=await sb.from('trip_state').select('updated_at').eq('id',1).single();
+    if(!data)return;
+    const remoteTime=new Date(data.updated_at).getTime();
+    if(remoteTime>_lastKnownUpdate+500){
+      const{data:full}=await sb.from('trip_state').select('*').eq('id',1).single();
+      if(full){_lastKnownUpdate=remoteTime;applyRemoteState(full);}
+    }
+  }catch(e){}
+}
+setInterval(pollForChanges,5000);
+
+function seedFlights(){
+  let changed=false;
+  FLIGHTS.forEach(f=>{
+    const daySlot=sched[f.date]?sched[f.date][f.slot]:null;
+    if(!daySlot)return;
+    if(!daySlot.some(i=>i.k==='flight'&&i.id===f.id)){
+      daySlot.unshift({k:'flight',id:f.id});
+      changed=true;
+    }
+  });
+  if(changed)saveSched();
+}
+
+function allActs(){return[...ACTS,...customActs];}
+
+/* ═══════════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════════ */
+function getUsedOn(id){
+  const out=[];const sl2={m:'AM',a:'PM',n:'🌙'};
+  DAYS.forEach(day=>{
+    ['m','a','n'].forEach(sl=>{
+      if((sched[day.d]||{})[sl]&&sched[day.d][sl].some(i=>i.k==='act'&&i.id===id))
+        out.push({date:day.lbl,slot:sl});
+    });
+  });
+  return out;
+}
+
+function dayTotal(date){
+  const s=sched[date];if(!s)return 0;
+  return s.m.filter(i=>i.k==='act').length+s.a.filter(i=>i.k==='act').length+s.n.filter(i=>i.k==='act').length;
+}
+
+function getFromLoc(slot){
+  const s=sched[curDay];const ord=['m','a','n'];const idx=ord.indexOf(slot);
+  const acts=s[slot].filter(i=>i.k==='act');
+  if(acts.length){const a=allActs().find(x=>x.id===acts[acts.length-1].id);if(a)return{name:a.n,mapq:a.mapq};}
+  for(let i=idx-1;i>=0;i--){
+    const p=s[ord[i]].filter(x=>x.k==='act');
+    if(p.length){const a=allActs().find(x=>x.id===p[p.length-1].id);if(a)return{name:a.n,mapq:a.mapq};}
+  }
+  const day=DAYS.find(d=>d.d===curDay);
+  return HOTEL_LOC[day.hotel]||{name:'Hotel',mapq:'San Antonio TX'};
+}
+
+function getFromLocBefore(slot, beforeIdx){
+  const s=sched[curDay];const ord=['m','a','n'];const slIdx=ord.indexOf(slot);
+  for(let i=beforeIdx-1;i>=0;i--){
+    if(s[slot][i].k==='act'){const a=allActs().find(x=>x.id===s[slot][i].id);if(a)return{name:a.n,mapq:a.mapq};}
+  }
+  for(let i=slIdx-1;i>=0;i--){
+    const p=s[ord[i]].filter(x=>x.k==='act');
+    if(p.length){const a=allActs().find(x=>x.id===p[p.length-1].id);if(a)return{name:a.n,mapq:a.mapq};}
+  }
+  const day=DAYS.find(d=>d.d===curDay);
+  return HOTEL_LOC[day.hotel]||{name:'Hotel',mapq:'San Antonio TX'};
+}
+
+function openMap(mapq){
+  const ua=navigator.userAgent;
+  const ios=/iPad|iPhone|iPod/.test(ua);const mac=/Mac/.test(ua)&&navigator.maxTouchPoints<2;
+  if(ios||mac)window.open(`maps://?q=${encodeURIComponent(mapq)}`,'_blank');
+  else window.open(`https://maps.google.com/maps?q=${encodeURIComponent(mapq)}`,'_blank');
+}
+
+function dirUrl(from,to){
+  const ua=navigator.userAgent;
+  const ios=/iPad|iPhone|iPod/.test(ua);const mac=/Mac/.test(ua)&&navigator.maxTouchPoints<2;
+  if(ios||mac)return `maps://?saddr=${encodeURIComponent(from)}&daddr=${encodeURIComponent(to)}`;
+  return `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(from)}&destination=${encodeURIComponent(to)}`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   FILTERS
+═══════════════════════════════════════════════════════ */
+function setF(f,btn){curFilt=f;document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderList();}
+function doFilter(){curSrch=document.getElementById('srchInp').value.toLowerCase();renderList();}
+function filteredActs(){
+  return allActs().filter(a=>{
+    if(curFilt==='starred')return stars.has(a.id);
+    const mf=curFilt==='all'||a.cat===curFilt;
+    const ms=!curSrch||a.n.toLowerCase().includes(curSrch)||a.desc.toLowerCase().includes(curSrch);
+    return mf&&ms;
+  });
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER: TABS
+═══════════════════════════════════════════════════════ */
+function renderTabs(){
+  const c=document.getElementById('dayNav');
+  c.innerHTML=DAYS.map(d=>{
+    const cnt=dayTotal(d.d);
+    const wx=wxData&&wxData[d.d];
+    const wxStr=wx?`${wx.icon} ${wx.high}°`:'';
+    return `<div class="day-tab${d.d===curDay?' active':''}" onclick="selectDay('${d.d}')">
+      <span class="t-dow">${d.sh}</span><span class="t-date">${d.lbl}</span>
+      <span class="t-hotel">${d.hotel.replace('JW Marriott','JW').replace('St. Anthony','St.A').replace('Transition','Transit')}</span>
+      ${wxStr?`<span class="t-wx">${wxStr}</span>`:''}
+      ${cnt?`<span class="t-cnt">${cnt}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+function selectDay(date){
+  curDay=date;renderTabs();renderSched();renderList();
+  if(window.innerWidth<=960)setTimeout(()=>document.getElementById('schedPanel').scrollIntoView({behavior:'smooth',block:'start'}),60);
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER: ACTIVITY LIST
+═══════════════════════════════════════════════════════ */
+function isAdded(id,sl){return (sched[curDay][sl]||[]).some(i=>i.k==='act'&&i.id===id);}
+
+function renderList(){
+  const c=document.getElementById('actList');
+  document.getElementById('actCnt').textContent=filteredActs().length;
+  const arr=filteredActs();
+  if(!arr.length){
+    c.innerHTML=`<div class="empty-msg">${curFilt==='starred'?'No starred items yet! Click ☆ on any activity to star it ⭐':'No activities match your search 🙈'}</div>`;
+    return;
+  }
+  c.innerHTML=arr.map(a=>{
+    const am=isAdded(a.id,'m'),aa=isAdded(a.id,'a'),an=isAdded(a.id,'n');
+    const starred=stars.has(a.id);
+    const used=getUsedOn(a.id);
+    const usedHtml=used.length?`<div class="used-on">${used.map(u=>`<span class="uo${u.slot==='a'?' pm':u.slot==='n'?' nite':''}">${u.date} ${u.slot==='m'?'AM':u.slot==='a'?'PM':'🌙'}</span>`).join('')}</div>`:'';
+    const mq=a.mapq?a.mapq.replace(/'/g,"\\'"):'';
+    const dur=getDur(a.id);
+    const note=actNotes[a.id];
+    const noteHtml=note
+      ?`<div class="act-note-wrap" id="acnote-${a.id}"><div class="act-note"><span class="act-note-text">📝 ${esc(note)}</span><button class="act-note-btn" onclick="editActNote(${a.id})" title="Edit note">✏️</button><button class="act-note-btn" onclick="deleteActNote(${a.id})" title="Remove note">×</button></div></div>`
+      :`<div class="act-note-wrap" id="acnote-${a.id}"><span class="act-note-add" onclick="editActNote(${a.id})">📝 Add note</span></div>`;
+    return `<div class="ac">
+      <div class="ac-top">
+        <div class="ac-left">
+          <span class="cp cp-${a.cat}">${CAT[a.cat].lbl}</span>
+          <span class="ac-name">${a.e} ${a.n}</span>
+        </div>
+        <div class="ac-right">
+          ${dur?`<span class="dur-badge">⏱ ${dur}</span>`:''}
+          <button class="star-btn${starred?' on':''}" onclick="toggleStar(${a.id},this)">${starred?'⭐':'☆'}</button>
+          ${mq?`<span class="map-link" onclick="openMap('${mq}')">📍 Map</span>`:''}
+        </div>
+      </div>
+      <div class="ac-desc">${a.desc}</div>
+      ${noteHtml}
+      ${usedHtml}
+      <div class="add-row">
+        <button class="ab bm${am?' on':''}" onclick="initAdd(${a.id},'m')">${am?'✓':'+'}️ ☀️ AM</button>
+        <button class="ab ba${aa?' on':''}" onclick="initAdd(${a.id},'a')">${aa?'✓':'+'}️ 🌤 PM</button>
+        <button class="ab bn${an?' on':''}" onclick="initAdd(${a.id},'n')">${an?'✓':'+'}️ 🌙 Night</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER: SCHEDULE
+═══════════════════════════════════════════════════════ */
+function renderSched(){
+  const day=DAYS.find(d=>d.d===curDay);
+  const s=sched[curDay];
+  const whoCls={turners:'who-t',transit:'who-x',both:'who-b'}[day.who];
+  const whoLbl={turners:'👨‍👩‍👧‍👦 Turner Family Only',transit:'🔄 Hotel Transition Day',both:'👨‍👩‍👧‍👦 Both Families'}[day.who];
+  const total=dayTotal(curDay);
+
+  const SLOTS=[
+    {key:'m',cls:'slot-m',icon:'☀️',lbl:'Morning',  time:'8 am – 12 pm'},
+    {key:'a',cls:'slot-a',icon:'🌤',lbl:'Afternoon', time:'12 pm – 6 pm'},
+    {key:'n',cls:'slot-n',icon:'🌙',lbl:'Night',     time:'6 pm – Late'},
+  ];
+
+  const slotsHtml=SLOTS.map(sl=>{
+    const items=s[sl.key];
+    const actCnt=items.filter(i=>i.k==='act').length;
+    const wxStr=wxSlotStr(curDay,sl.key);
+    let body='';
+    if(items.length===0){body='<div class="slot-empty">Nothing planned yet — add from the list!</div>';}
+    else{
+      body=`<div class="si-list">${items.map((item,idx)=>{
+        if(item.k==='flight'){
+          const f=FLIGHTS.find(x=>x.id===item.id);if(!f)return '';
+          return `<div class="flight-card">
+            <div class="fc-left">
+              <span class="fc-badge">✈️ ${f.flightNum}</span>
+              <div class="fc-body">
+                <div class="fc-route">${f.dep.airport} → ${f.arr.airport}</div>
+                <div class="fc-detail">${f.dep.time} – ${f.arr.time} &nbsp;·&nbsp; ${f.duration} &nbsp;·&nbsp; ${f.aircraft}</div>
+              </div>
+            </div>
+            <button class="tn-rm" onclick="removeItem('${sl.key}',${idx})" title="Remove flight">×</button>
+          </div>`;
+        }
+        if(item.k==='travel'){
+          const du=item.fromMapq&&item.toMapq?dirUrl(item.fromMapq,item.toMapq):'';
+          return `<div class="travel-note">🚗 <strong>${item.min} min</strong> from ${item.from}
+            ${du?`&nbsp;<a onclick="window.open('${du}')">📍 Directions</a>`:''}
+            <button class="tn-rm" onclick="removeItem('${sl.key}',${idx})">×</button></div>`;
+        }
+        const act=allActs().find(a=>a.id===item.id);if(!act)return '';
+        const ppl=item.people&&item.people.length?item.people.map(pid=>{const p=PEOPLE.find(x=>x.id===pid);return p?p.em:'';}).join(''):'';
+        const mq=act.mapq?act.mapq.replace(/'/g,"\\'"):'';
+        const dur=getDur(act.id);
+        const actNote=actNotes[act.id];
+        const visitNote=item.note;
+        return `<div class="si">
+          <div class="si-dot" style="background:${CAT[act.cat].dot}"></div>
+          <div class="si-info">
+            <div class="si-name">${act.e} ${act.n}${dur?` <span class="dur-badge">⏱ ${dur}</span>`:''}</div>
+            <div class="si-sub">${CAT[act.cat].lbl}${ppl?` &nbsp;·&nbsp; ${ppl}`:''}</div>
+            ${actNote?`<div class="si-note">📝 ${esc(actNote)}</div>`:''}
+            ${visitNote?`<div class="si-note">🗒 ${esc(visitNote)}</div>`:''}
+          </div>
+          ${mq?`<span class="map-link" onclick="openMap('${mq}')">📍</span>`:''}
+          <button class="si-edit" onclick="initEdit('${sl.key}',${idx})" title="Edit">✏️</button>
+          <button class="si-rm" onclick="removeItem('${sl.key}',${idx})" title="Remove">×</button>
+        </div>`;
+      }).join('')}</div>`;
+    }
+    return `<div class="slot-card ${sl.cls}">
+      <div class="slot-hdr">
+        <span>${sl.icon} ${sl.lbl}</span>
+        <span class="slot-cnt">${actCnt} item${actCnt!==1?'s':''}</span>
+        ${wxStr?`<span class="slot-wx">${wxStr}</span>`:''}
+        <span class="slot-time">${sl.time}</span>
+      </div>
+      <div class="slot-body">${body}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('schedPanel').innerHTML=`
+    <div class="day-card">
+      <div class="day-card-top">
+        <div>
+          <h2>${day.dow}, ${day.lbl}</h2>
+          <p>🏨 ${day.hotel} &nbsp;•&nbsp; ${day.note}</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span class="who ${whoCls}">${whoLbl}</span>
+          ${total?`<button class="clear-btn" onclick="clearDay()">🗑 Clear Day</button>`:''}
+        </div>
+      </div>
+      ${wxDayHtml(curDay)}
+      <div class="day-notes">
+        <div class="day-notes-label">📝 Day Notes</div>
+        <textarea class="day-notes-ta" id="dayNote-${curDay}" placeholder="Reminders, logistics, things to pack…" oninput="onDayNoteInput('${curDay}',this.value)">${esc(dayNotes[curDay]||'')}</textarea>
+      </div>
+    </div>
+    ${slotsHtml}
+    <div class="legend">
+      <div class="leg-title">Legend</div>
+      <div class="leg-items">
+        ${Object.entries(CAT).map(([k,v])=>`<div class="leg-item"><div class="leg-dot" style="background:${v.dot}"></div>${v.lbl}</div>`).join('')}
+        <div class="leg-item"><div class="leg-dot" style="background:#7D3C98;border:2px solid rgba(0,0,0,.1)"></div>Travel Note</div>
+      </div>
+    </div>`;
+}
+
+function removeItem(slot,idx){sched[curDay][slot].splice(idx,1);saveSched();renderSched();renderTabs();renderList();renderPeople();}
+function clearDay(){if(!confirm('Clear all items from this day?'))return;sched[curDay]={m:[],a:[],n:[]};saveSched();renderSched();renderTabs();renderList();renderPeople();showToast('Day cleared');}
+function toggleStar(id,btn){
+  if(stars.has(id)){stars.delete(id);btn.classList.remove('on');btn.textContent='☆';}
+  else{stars.add(id);btn.classList.add('on');btn.textContent='⭐';}
+  saveStars();renderList();
+}
+
+/* ═══════════════════════════════════════════════════════
+   ADD MODAL
+═══════════════════════════════════════════════════════ */
+function initAdd(id,slot){
+  pendingAdd={id,slot};
+  const act=allActs().find(a=>a.id===id);
+  const from=getFromLoc(slot);
+  const slNames={m:'☀️ Morning',a:'🌤 Afternoon',n:'🌙 Night'};
+  document.getElementById('addTitle').textContent=`Adding to ${slNames[slot]}`;
+  document.getElementById('addActName').textContent=act.n;
+  document.getElementById('addFrom').textContent=from.name;
+  document.getElementById('addMin').value='';
+  document.getElementById('addNote').value='';
+  window._tvFrom=from.mapq;window._tvTo=act.mapq;
+
+  // Build people checkboxes
+  const avail=availPeople(curDay);
+  document.getElementById('addPeople').innerHTML=avail.map(p=>`
+    <div class="pcheck checked" onclick="togglePcheck(this,'${p.id}')">
+      <input type="checkbox" value="${p.id}" checked>
+      ${p.em} ${p.name}
+    </div>`).join('');
+
+  document.getElementById('addOverlay').classList.remove('hidden');
+}
+
+function initEdit(slot, idx){
+  const item=sched[curDay][slot][idx];
+  if(!item||item.k!=='act')return;
+  const act=allActs().find(a=>a.id===item.id);
+  if(!act)return;
+
+  // Find preceding travel note (must be immediately before this act)
+  const prevItem=idx>0?sched[curDay][slot][idx-1]:null;
+  const travelNote=(prevItem&&prevItem.k==='travel')?prevItem:null;
+  const travelIdx=travelNote?idx-1:-1;
+
+  pendingAdd={id:item.id, slot, editMode:true, editIdx:idx, travelIdx};
+
+  const slNames={m:'☀️ Morning',a:'🌤 Afternoon',n:'🌙 Night'};
+  document.getElementById('addTitle').textContent=`✏️ Edit – ${slNames[slot]}`;
+  document.getElementById('addActName').textContent=act.n;
+
+  if(travelNote){
+    document.getElementById('addFrom').textContent=travelNote.from;
+    document.getElementById('addMin').value=travelNote.min;
+    window._tvFrom=travelNote.fromMapq;window._tvTo=travelNote.toMapq;
+  } else {
+    const from=getFromLocBefore(slot,idx);
+    document.getElementById('addFrom').textContent=from.name;
+    document.getElementById('addMin').value='';
+    window._tvFrom=from.mapq;window._tvTo=act.mapq;
+  }
+
+  const avail=availPeople(curDay);
+  const existing=item.people&&item.people.length?item.people:avail.map(p=>p.id);
+  document.getElementById('addPeople').innerHTML=avail.map(p=>`
+    <div class="pcheck${existing.includes(p.id)?' checked':''}" onclick="togglePcheck(this,'${p.id}')">
+      <input type="checkbox" value="${p.id}" ${existing.includes(p.id)?'checked':''}>
+      ${p.em} ${p.name}
+    </div>`).join('');
+
+  document.getElementById('addNote').value=item.note||'';
+  document.getElementById('addConfirmBtn').textContent='Save Changes';
+  document.getElementById('addOverlay').classList.remove('hidden');
+}
+
+function togglePcheck(el,pid){
+  el.classList.toggle('checked');
+  el.querySelector('input').checked=el.classList.contains('checked');
+}
+function checkAll(){document.querySelectorAll('#addPeople .pcheck').forEach(el=>{el.classList.add('checked');el.querySelector('input').checked=true;});}
+function checkNone(){document.querySelectorAll('#addPeople .pcheck').forEach(el=>{el.classList.remove('checked');el.querySelector('input').checked=false;});}
+
+function openTravelMaps(){if(window._tvFrom&&window._tvTo)window.open(dirUrl(window._tvFrom,window._tvTo),'_blank');}
+
+function confirmAdd(){
+  if(!pendingAdd)return;
+  closeAddModal();
+  const{id,slot,editMode,editIdx,travelIdx}=pendingAdd;
+  const act=allActs().find(a=>a.id===id);
+  const min=parseInt(document.getElementById('addMin').value)||0;
+  const people=[...document.querySelectorAll('#addPeople input:checked')].map(i=>i.value);
+  const visitNote=document.getElementById('addNote').value.trim();
+
+  if(editMode){
+    // Update existing act's people and note
+    sched[curDay][slot][editIdx].people=people;
+    if(visitNote)sched[curDay][slot][editIdx].note=visitNote;
+    else delete sched[curDay][slot][editIdx].note;
+    if(travelIdx>=0){
+      // Existing travel note — update or remove
+      if(min>0){
+        sched[curDay][slot][travelIdx].min=min;
+      } else {
+        sched[curDay][slot].splice(travelIdx,1);
+      }
+    } else if(min>0){
+      // Insert new travel note before the act (editIdx may have shifted, re-find)
+      const fromName=document.getElementById('addFrom').textContent;
+      const newActIdx=sched[curDay][slot].indexOf(sched[curDay][slot].find((x,i)=>x.k==='act'&&x.id===id&&i===editIdx));
+      const insertAt=newActIdx>=0?newActIdx:editIdx;
+      sched[curDay][slot].splice(insertAt,0,{k:'travel',from:fromName,fromMapq:window._tvFrom,toMapq:act.mapq,min});
+    }
+    saveSched();renderSched();renderTabs();renderList();renderPeople();
+    showToast(`Updated "${act.n}"`);
+  } else {
+    if(min>0){
+      const from=getFromLoc(slot);
+      sched[curDay][slot].push({k:'travel',from:from.name,fromMapq:from.mapq,toMapq:act.mapq,min});
+    }
+    const newItem={k:'act',id,people};
+    if(visitNote)newItem.note=visitNote;
+    sched[curDay][slot].push(newItem);
+    saveSched();renderSched();renderTabs();renderList();renderPeople();
+    const slN={m:'☀️ Morning',a:'🌤 Afternoon',n:'🌙 Night'};
+    showToast(`Added "${act.n}" to ${slN[slot]}`);
+  }
+  pendingAdd=null;
+}
+
+function cancelAdd(){
+  closeAddModal();pendingAdd=null;
+  const btn=document.getElementById('addConfirmBtn');
+  if(btn)btn.textContent='Add to Schedule';
+  const na=document.getElementById('addNote');
+  if(na)na.value='';
+}
+function closeAddModal(){document.getElementById('addOverlay').classList.add('hidden');}
+function closeAddIfBg(e){if(e.target===document.getElementById('addOverlay'))cancelAdd();}
+
+/* ═══════════════════════════════════════════════════════
+   CUSTOM ADD MODAL
+═══════════════════════════════════════════════════════ */
+let custST=null,custSel=null,custManual=false;
+
+function openCustomModal(){
+  custSel=null;custManual=false;
+  document.getElementById('custSearch').value='';
+  document.getElementById('custResults').innerHTML='';
+  document.getElementById('custResults').classList.remove('show');
+  document.getElementById('custNoResults').style.display='none';
+  document.getElementById('custSearchMode').style.display='block';
+  document.getElementById('custManualMode').style.display='none';
+  document.getElementById('custForm').style.display='none';
+  document.getElementById('selPlace').style.display='none';
+  document.getElementById('custAddBtn').style.display='none';
+  document.getElementById('customOverlay').classList.remove('hidden');
+  setTimeout(()=>document.getElementById('custSearch').focus(),80);
+}
+function closeCustomModal(){document.getElementById('customOverlay').classList.add('hidden');}
+function closeCustomIfBg(e){if(e.target===document.getElementById('customOverlay'))closeCustomModal();}
+
+function enableManualEntry(){
+  custManual=true;custSel=null;
+  document.getElementById('custSearchMode').style.display='none';
+  document.getElementById('custManualMode').style.display='block';
+  document.getElementById('custForm').style.display='block';
+  document.getElementById('selPlace').style.display='none';
+  document.getElementById('custAddBtn').style.display='inline-block';
+  document.getElementById('custDesc').value='';
+  document.getElementById('manName').value='';
+  document.getElementById('manAddr').value='';
+  setTimeout(()=>document.getElementById('manName').focus(),60);
+}
+function disableManualEntry(){
+  custManual=false;custSel=null;
+  document.getElementById('custSearchMode').style.display='block';
+  document.getElementById('custManualMode').style.display='none';
+  document.getElementById('custForm').style.display='none';
+  document.getElementById('custAddBtn').style.display='none';
+  setTimeout(()=>document.getElementById('custSearch').focus(),60);
+}
+
+function onCustSearch(){
+  const q=document.getElementById('custSearch').value.trim();
+  clearTimeout(custST);
+  document.getElementById('custNoResults').style.display='none';
+  if(q.length<2){document.getElementById('custResults').classList.remove('show');return;}
+  document.getElementById('custResults').innerHTML='<div class="sr-loading">Searching…</div>';
+  document.getElementById('custResults').classList.add('show');
+  custST=setTimeout(()=>runCustSearch(q),400);
+}
+
+async function runCustSearch(q){
+  const el=document.getElementById('custResults');
+  try{
+    // Photon geocoder — much better at finding businesses & restaurants by name
+    const url=`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&lat=29.4241&lon=-98.4936&limit=10&lang=en`;
+    const res=await fetch(url);
+    const json=await res.json();
+    const features=(json.features||[]).filter(f=>{
+      // Keep results in or near Texas / San Antonio area
+      const [lon,lat]=f.geometry.coordinates;
+      return lat>27&&lat<32&&lon>-100&&lon<-96;
+    });
+    renderCustResults(features);
+  }catch(e){
+    el.innerHTML='<div class="sr-loading">Search unavailable — check your connection.</div>';
+    el.classList.add('show');
+  }
+}
+
+function renderCustResults(features){
+  const el=document.getElementById('custResults');
+  if(!features||!features.length){
+    el.classList.remove('show');
+    document.getElementById('custNoResults').style.display='block';
+    return;
+  }
+  document.getElementById('custNoResults').style.display='none';
+  window._cRes=features;
+  el.innerHTML=features.map((f,i)=>{
+    const p=f.properties;
+    const name=p.name||p.street||'Unknown';
+    const parts=[p.street,p.city,p.state].filter(Boolean);
+    const addr=parts.join(', ')||'San Antonio, TX';
+    const type=p.osm_value||p.type||'';
+    const typeLabel={restaurant:'🍽 Restaurant',cafe:'☕ Café',bar:'🍺 Bar',fast_food:'🍔 Fast Food',
+      museum:'🏛 Museum',park:'🌳 Park',attraction:'🎡 Attraction',hotel:'🏨 Hotel',
+      theatre:'🎭 Theatre',cinema:'🎬 Cinema',spa:'💆 Spa',golf_course:'⛳ Golf'}[type]||'📍 Place';
+    return `<div class="sr-item" onclick="selectCustResult(${i})">
+      <div class="sr-name">${esc(name)} <span style="font-size:.62rem;color:var(--muted);font-weight:400">${typeLabel}</span></div>
+      <div class="sr-addr">${esc(addr)}</div>
+    </div>`;
+  }).join('');
+  el.classList.add('show');
+}
+
+async function selectCustResult(idx){
+  const f=window._cRes[idx];
+  const p=f.properties;
+  const [lon,lat]=f.geometry.coordinates;
+  const name=p.name||p.street||'Place';
+  const addrParts=[p.housenumber,p.street,p.city,p.state].filter(Boolean);
+  const addr=addrParts.join(', ')||'San Antonio, TX';
+  const type=p.osm_value||p.type||'place';
+  custSel={name,addr,mapq:`${name}, ${addr}`,lat,lon,type};
+  document.getElementById('selName').textContent=name;
+  document.getElementById('selAddr').textContent=addr;
+  document.getElementById('selPlace').style.display='block';
+  document.getElementById('custResults').classList.remove('show');
+  document.getElementById('custNoResults').style.display='none';
+  const typeMap={restaurant:'eat',cafe:'eat',bar:'eat',fast_food:'eat',bakery:'eat',food:'eat',
+    museum:'see',gallery:'see',attraction:'see',tourism:'see',monument:'see',viewpoint:'see',
+    park:'do',sports_centre:'do',theme_park:'do',zoo:'do',aquarium:'do',leisure:'do',
+    hotel:'resort',spa:'resort',resort:'resort'};
+  document.getElementById('custCat').value=typeMap[type]||'do';
+  document.getElementById('custForm').style.display='block';
+  document.getElementById('custAddBtn').style.display='inline-block';
+  document.getElementById('custDesc').value='Loading description…';
+  const blurb=await fetchWikiBlurb(name);
+  document.getElementById('custDesc').value=blurb||`${name} — located in San Antonio, TX.`;
+}
+
+async function fetchWikiBlurb(name){
+  try{
+    const r=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(name)}`);
+    if(r.ok){const d=await r.json();if(d.extract&&d.type!=='disambiguation')return d.extract.length>220?d.extract.slice(0,217)+'…':d.extract;}
+  }catch(e){}
+  return '';
+}
+
+function addCustomAct(){
+  let name,mapq,pos;
+  const cat=document.getElementById('custCat').value;
+  const desc=document.getElementById('custDesc').value.trim();
+
+  if(custManual){
+    // Manual entry — use the form fields
+    name=document.getElementById('manName').value.trim();
+    if(!name){showToast('Please enter a place name');return;}
+    const addr=document.getElementById('manAddr').value.trim();
+    mapq=addr?`${name}, ${addr}, San Antonio, TX`:`${name}, San Antonio, TX`;
+    pos=null; // No precise coords for manual entry — won't show on map
+  } else {
+    if(!custSel){showToast('Please select a place from search results');return;}
+    name=custSel.name;mapq=custSel.mapq;pos=[custSel.lat,custSel.lon];
+  }
+
+  const act={id:nextCustId++,cat,e:'📍',n:name,
+    desc:desc||`${name} — San Antonio, TX.`,
+    mapq,pos,custom:true};
+  customActs.push(act);saveCustom();closeCustomModal();renderList();
+  if(lMap&&pos)addMapMarker(act);
+  showToast(`"${name}" added to your list!`);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MAP VIEW
+═══════════════════════════════════════════════════════ */
+let lMap=null;
+
+function initLeafletMap(){
+  if(lMap)return;
+  const el=document.getElementById('leafletMap');
+  lMap=L.map(el,{zoomControl:true}).setView([29.50,-98.50],11);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom:19
+  }).addTo(lMap);
+
+  // Hotel pins (special)
+  addHotelPin([29.7041,-98.4742],'★','#DAA520','JW Marriott Hill Country Resort','🏨 Your home Apr 6–12',22);
+  addHotelPin([29.4256,-98.4926],'★','#C0392B','The St. Anthony Hotel','🏨 Your home Apr 4–6',18);
+
+  // Activity pins
+  allActs().forEach(a=>{if(a.pos)addMapMarker(a);});
+  lMap.invalidateSize();
+}
+
+function addHotelPin(pos,icon,color,name,sub,size){
+  const html=`<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;border:3px solid gold;display:flex;align-items:center;justify-content:center;color:white;font-size:${Math.round(size*.55)}px;box-shadow:0 2px 8px rgba(0,0,0,.4);font-weight:900">${icon}</div>`;
+  const mi=L.divIcon({html,iconSize:[size,size],iconAnchor:[size/2,size/2],className:''});
+  L.marker(pos,{icon:mi}).addTo(lMap)
+    .bindPopup(`<strong style="font-size:.9rem">${name}</strong><br><span style="font-size:.75rem;color:#666">${sub}</span>`);
+}
+
+function addMapMarker(a){
+  if(!lMap||!a.pos)return;
+  const col=CAT[a.cat]?CAT[a.cat].dot:'#999';
+  const mq=(a.mapq||'').replace(/'/g,"\\'");
+  const dayOpts=DAYS.map(d=>`<option value="${d.d}">${d.sh} ${d.lbl}</option>`).join('');
+  L.circleMarker(a.pos,{radius:7,fillColor:col,color:'#fff',weight:2,opacity:1,fillOpacity:.87})
+    .addTo(lMap)
+    .bindPopup(`<strong style="font-size:.85rem">${a.e} ${a.n}</strong><br>
+      <span style="font-size:.72rem;color:${col};font-weight:700">${CAT[a.cat]?CAT[a.cat].lbl:''}</span><br>
+      <span style="font-size:.72rem;color:#555">${a.desc.slice(0,100)}…</span><br>
+      <a href="javascript:void(0)" onclick="openMap('${mq}');return false"
+        style="font-size:.72rem;color:#2471A3">📍 Open in Maps</a>
+      <div class="map-add-ctrl">
+        <div class="mac-row">
+          <select class="mac-day" id="mac-day-${a.id}">${dayOpts}</select>
+          <select class="mac-slot" id="mac-slot-${a.id}">
+            <option value="m">☀️ AM</option>
+            <option value="a">🌤 PM</option>
+            <option value="n">🌙 Night</option>
+          </select>
+        </div>
+        <button class="mac-btn" onclick="addFromMap(${a.id})">+ Add to Schedule</button>
+      </div>`,{maxWidth:260});
+}
+
+function addFromMap(actId){
+  const dayEl=document.getElementById(`mac-day-${actId}`);
+  const slotEl=document.getElementById(`mac-slot-${actId}`);
+  if(!dayEl||!slotEl)return;
+  const targetDay=dayEl.value;
+  const targetSlot=slotEl.value;
+  lMap.closePopup();
+  // Switch to schedule view, select the target day, then open add modal
+  curDay=targetDay;
+  showView('schedule');
+  renderTabs();
+  renderSched();
+  renderList();
+  setTimeout(()=>initAdd(actId,targetSlot),120);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PEOPLE VIEW
+═══════════════════════════════════════════════════════ */
+function renderPeople(){
+  const c=document.getElementById('peopleContent');
+  if(!document.getElementById('viewPeople').classList.contains('show'))return;
+
+  const slotIcons={m:'☀️',a:'🌤️',n:'🌙'};
+  const slotNames={m:'Morning',a:'Afternoon',n:'Night'};
+
+  function personDayCell(pid, date){
+    const avail=personAvailable(pid,date);
+    if(!avail)return `<td class="cell-na">—<br><span style="font-size:.62rem">Not yet</span></td>`;
+
+    // Flights on this day for this person
+    const dayFlights=FLIGHTS.filter(f=>f.date===date&&f.people&&f.people.includes(pid));
+
+    const dayActs={m:[],a:[],n:[]};
+    const s=sched[date]||{m:[],a:[],n:[]};
+    ['m','a','n'].forEach(sl=>{
+      s[sl].filter(i=>i.k==='act').forEach(i=>{
+        const ppl=i.people&&i.people.length?i.people:availPeople(date).map(p=>p.id);
+        if(ppl.includes(pid)){const act=allActs().find(a=>a.id===i.id);if(act)dayActs[sl].push(act);}
+      });
+    });
+    const hasAny=dayActs.m.length||dayActs.a.length||dayActs.n.length||dayFlights.length;
+    const cls=hasAny?'cell-planned':'cell-empty';
+    const rows=['m','a','n'].map(sl=>{
+      const slFlight=dayFlights.find(f=>f.slot===sl);
+      if(slFlight){
+        const arrow=slFlight.dir==='inbound'?'→🛬':'🛫→';
+        return `<div class="slot-entry has-flight">✈️ ${slFlight.flightNum} ${slFlight.dep.airport}${arrow}${slFlight.arr.airport}</div>`
+          +(dayActs[sl].length?dayActs[sl].map(a=>`<div class="slot-entry has-act">${slotIcons[sl]} ${a.n.length>20?a.n.slice(0,18)+'…':a.n}</div>`).join(''):'');
+      }
+      if(dayActs[sl].length){
+        return dayActs[sl].map(a=>`<div class="slot-entry has-act">${slotIcons[sl]} ${a.n.length>20?a.n.slice(0,18)+'…':a.n}</div>`).join('');
+      }
+      return `<div class="slot-entry no-act"><span class="slot-icon">${slotIcons[sl]}</span> free</div>`;
+    }).join('');
+    return `<td class="${cls}"><div class="slot-row">${rows}${!hasAny?'<div class="gap-label">⚠️ No plans yet</div>':''}</div></td>`;
+  }
+
+  const families=['turner','koczan'];
+  const famNames={turner:'Turner Family',koczan:'Koczan Family'};
+
+  c.innerHTML=families.map(fam=>{
+    const famPeople=PEOPLE.filter(p=>p.fam===fam);
+    const rows=famPeople.map(p=>{
+      const cells=DAYS.map(d=>personDayCell(p.id,d.d)).join('');
+      return `<tr>
+        <td class="pg-person"><span class="em">${p.em}</span>${p.name}${p.age?` <span style="font-size:.65rem;color:var(--muted)">(${p.age})</span>`:''}
+</td>${cells}</tr>`;
+    }).join('');
+    return `<div class="family-section">
+      <div class="fam-title">${fam==='turner'?'🟠':'🔵'} ${famNames[fam]}</div>
+      <div class="people-grid">
+        <table class="pg-table">
+          <thead><tr>
+            <th>Person</th>
+            ${DAYS.map(d=>`<th>${d.sh}<br>${d.lbl}</th>`).join('')}
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════
+   VIEW SWITCHING
+═══════════════════════════════════════════════════════ */
+function showView(view){
+  document.querySelectorAll('.vt').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view-content').forEach(v=>v.classList.remove('show'));
+  document.getElementById('dayNavWrap').style.display=view==='schedule'?'block':'none';
+  document.querySelector(`.vt[onclick="showView('${view}')"]`).classList.add('active');
+  document.getElementById(`view${view.charAt(0).toUpperCase()+view.slice(1)}`).classList.add('show');
+  if(view==='map'){
+    setTimeout(()=>{
+      if(!lMap)initLeafletMap();
+      else lMap.invalidateSize();
+    },50);
+  }
+  if(view==='people') renderPeople();
+}
+
+/* ═══════════════════════════════════════════════════════
+   TOAST / UTILS
+═══════════════════════════════════════════════════════ */
+let _tt;
+function showToast(msg){
+  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),2500);
+}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ═══════════════════════════════════════════════════════
+   NOTES
+═══════════════════════════════════════════════════════ */
+function editActNote(id){
+  const wrap=document.getElementById(`acnote-${id}`);
+  if(!wrap)return;
+  const cur=actNotes[id]||'';
+  wrap.innerHTML=`<div class="act-note-editor">
+    <textarea class="act-note-inp" id="acnote-ta-${id}" placeholder="Add a note, tip, or reminder…">${esc(cur)}</textarea>
+    <div class="act-note-actions">
+      <button class="act-note-save" onclick="saveActNote(${id})">Save</button>
+      <button class="act-note-cancel" onclick="renderList()">Cancel</button>
+    </div>
+  </div>`;
+  const ta=document.getElementById(`acnote-ta-${id}`);
+  if(ta){ta.focus();ta.setSelectionRange(cur.length,cur.length);}
+}
+
+function saveActNote(id){
+  const ta=document.getElementById(`acnote-ta-${id}`);
+  if(!ta)return;
+  const val=ta.value.trim();
+  if(val)actNotes[id]=val;else delete actNotes[id];
+  saveActNotes();
+  renderList();
+  renderSched(); // refresh schedule so si-note updates too
+}
+
+function deleteActNote(id){
+  delete actNotes[id];
+  saveActNotes();
+  renderList();
+  renderSched();
+}
+
+function onDayNoteInput(date,val){
+  if(val.trim())dayNotes[date]=val.trim();
+  else delete dayNotes[date];
+  saveDayNotes();
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════ */
+async function init(){
+  // Render immediately with empty state so the UI appears fast
+  seedFlights();renderTabs();renderSched();renderList();fetchWeather();
+
+  // Load shared state from Supabase
+  try{
+    const{data,error}=await sb.from('trip_state').select('*').eq('id',1).single();
+    if(!error&&data){
+      if(data.schedule&&Object.keys(data.schedule).length){
+        sched=data.schedule;
+        DAYS.forEach(d=>{if(!sched[d.d])sched[d.d]={m:[],a:[],n:[]};});
+      }
+      if(data.custom_acts?.length){customActs=data.custom_acts;nextCustId=Math.max(999,...customActs.map(a=>a.id))+1;}
+      if(data.stars?.length)stars=new Set(data.stars);
+      if(data.act_notes)actNotes=data.act_notes;
+      if(data.day_notes)dayNotes=data.day_notes;
+      if(data.updated_at)_lastKnownUpdate=new Date(data.updated_at).getTime();
+      seedFlights();renderTabs();renderSched();renderList();
+      setSyncStatus('synced');
+    }
+  }catch(e){
+    console.error('Supabase load failed — working offline:',e);
+    setSyncStatus('error');
+  }
+
+  subscribeToChanges();
+}
+init();
+</script>
+</body>
+</html>
