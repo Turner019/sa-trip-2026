@@ -300,6 +300,7 @@ header{background:linear-gradient(135deg,#7B1515,#C0392B 55%,#922B21);color:#fff
   <div class="hdr-b">
     <span class="hb">🏨 Apr 4–6 &nbsp;The St. Anthony</span>
     <span class="hb">🏨 Apr 6–12 &nbsp;JW Marriott Hill Country</span>
+    <span class="hb" id="sync-status" style="cursor:pointer" onclick="pollForChanges()" title="Click to sync now">☁️ Connecting…</span>
   </div>
 </div>
 </header>
@@ -747,14 +748,16 @@ let _lastKnownUpdate=0;
 function triggerSave(){clearTimeout(_saveTimer);_saveTimer=setTimeout(doSave,800);}
 async function doSave(){
   _lastSaveTime=Date.now();
+  setSyncStatus('saving');
   try{
-    const{error}=await sb.from('trip_state').update({
+    const{error}=await sb.from('trip_state').upsert({
+      id:1,
       schedule:sched,custom_acts:customActs,stars:[...stars],
       act_notes:actNotes,day_notes:dayNotes,updated_at:new Date().toISOString()
-    }).eq('id',1);
-    if(error)console.warn('Supabase save error:',error);
-    else _lastKnownUpdate=_lastSaveTime;
-  }catch(e){console.warn('Supabase save failed:',e);}
+    });
+    if(error){console.error('Supabase save error:',error);setSyncStatus('error');}
+    else{_lastKnownUpdate=_lastSaveTime;setSyncStatus('saved');}
+  }catch(e){console.error('Supabase save failed:',e);setSyncStatus('error');}
 }
 function saveSched(){triggerSave();}
 function saveCustom(){triggerSave();}
@@ -772,36 +775,52 @@ function applyRemoteState(d){
   actNotes=d.act_notes||{};
   dayNotes=d.day_notes||{};
   renderTabs();renderSched();renderList();renderPeople();
-  showToast('🔄 Synced');
+  setSyncStatus('synced');
+  showToast('🔄 Synced from another device');
+}
+
+// Sync status indicator
+function setSyncStatus(state){
+  const el=document.getElementById('sync-status');
+  if(!el)return;
+  if(state==='saving'){el.textContent='⏳ Saving…';el.style.color='#DAA520';}
+  else if(state==='saved'){el.textContent='✅ Saved';el.style.color='#1E8449';setTimeout(()=>{if(el.textContent==='✅ Saved')el.textContent='☁️ Synced';},2000);}
+  else if(state==='synced'){el.textContent='☁️ Synced';el.style.color='#2471A3';}
+  else if(state==='error'){el.textContent='⚠️ Sync error';el.style.color='#C0392B';}
 }
 
 // Real-time subscription (instant push when it works)
 function subscribeToChanges(){
   sb.channel('trip_realtime')
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'trip_state'},payload=>{
-      if(Date.now()-_lastSaveTime<6000)return; // ignore our own save echo
+      if(Date.now()-_lastSaveTime<2000)return; // ignore our own save echo
       if(payload.new&&payload.new.updated_at){
-        _lastKnownUpdate=new Date(payload.new.updated_at).getTime();
+        const rt=new Date(payload.new.updated_at).getTime();
+        if(rt<=_lastKnownUpdate)return;
+        _lastKnownUpdate=rt;
         applyRemoteState(payload.new);
       }
     })
-    .subscribe();
+    .subscribe(status=>{
+      const el=document.getElementById('sync-status');
+      if(el&&status==='SUBSCRIBED')el.title='Real-time connected';
+    });
 }
 
-// Polling fallback — checks every 15s in case real-time misses anything
+// Polling fallback — checks every 5s in case real-time misses anything
 async function pollForChanges(){
-  if(Date.now()-_lastSaveTime<8000)return; // skip right after our own save
+  if(Date.now()-_lastSaveTime<2000)return; // skip right after our own save
   try{
     const{data}=await sb.from('trip_state').select('updated_at').eq('id',1).single();
     if(!data)return;
     const remoteTime=new Date(data.updated_at).getTime();
-    if(remoteTime>_lastKnownUpdate+1000){
+    if(remoteTime>_lastKnownUpdate+500){
       const{data:full}=await sb.from('trip_state').select('*').eq('id',1).single();
       if(full){_lastKnownUpdate=remoteTime;applyRemoteState(full);}
     }
   }catch(e){}
 }
-setInterval(pollForChanges,15000);
+setInterval(pollForChanges,5000);
 
 function seedFlights(){
   let changed=false;
@@ -1588,8 +1607,12 @@ async function init(){
       if(data.day_notes)dayNotes=data.day_notes;
       if(data.updated_at)_lastKnownUpdate=new Date(data.updated_at).getTime();
       seedFlights();renderTabs();renderSched();renderList();
+      setSyncStatus('synced');
     }
-  }catch(e){console.warn('Supabase load failed — working offline:',e);}
+  }catch(e){
+    console.error('Supabase load failed — working offline:',e);
+    setSyncStatus('error');
+  }
 
   subscribeToChanges();
 }
